@@ -1,0 +1,70 @@
+//settings
+.cnf-3dweb {
+
+  p {
+    font-size: 1em;
+    line-height: 1.5em;
+    color: #3b3b3b;
+  }
+ p.warning {
+   background-color:#eae3c1;
+   padding: 0.5em;
+   font-size: 0.8em;
+ }
+
+  &__button {
+    width: 105px;
+  }
+
+  &__settings {
+    background-color: #f6f6f6;
+    padding:30px 10px 10px 10px;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    &__holder {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    a {
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    &__upload-thumb {
+      width: 80px;
+      margin: 0 10px;
+    }
+
+    &-holder {
+      padding: 10px;
+      display: flex;
+      align-items: flex-start;
+      flex-direction: column;
+      align-content: flex-start;
+      max-width: 400px;
+    }
+
+    &-holder__description {
+      margin-top: 2px;
+      font-size: 0.8em;
+      display: inline-block;
+    }
+
+
+    &__row {
+      display: flex;
+      align-items: flex-start;
+    }
+
+    &__label {
+      min-width: 40%;
+      padding-top: 10px;
+    }
+  }
+}

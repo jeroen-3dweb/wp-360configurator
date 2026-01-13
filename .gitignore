@@ -1,0 +1,14 @@
+*
+!.gitignore
+!docker/
+!docker-compose.yml
+!example.env
+!wp-content/
+!wp-content/plugins/
+!wp-content/plugins/configurator-3dweb/
+!wp-content/plugins/configurator-3dweb/**
+!.github/
+!.github/**
+!plugin-assets/
+!plugin-assets/**
+.env
