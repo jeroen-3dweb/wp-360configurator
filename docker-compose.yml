@@ -23,7 +23,7 @@ services:
     container_name: wp-360configurator-mysql
     image: mysql:5.7
     ports:
-      - "3306:3306"
+      - "3307:3306"
     networks:
       - wpconfigurator
     environment:

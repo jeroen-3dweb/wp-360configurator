@@ -2,7 +2,7 @@
 /*
 Plugin Name: 3DWeb Print Studio
 Plugin URI: https://3dweb.io
-Description: Configure your products in 3D
+Description: Design your print in real-time 3D. Visualize, customize and approve print designs instantly — fully branded and easy to integrate.
 Author: Jeroen Termaat
 Author URI: https://3dweb.nl
 Developer: Jeroen Termaat
