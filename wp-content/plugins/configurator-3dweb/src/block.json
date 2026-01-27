@@ -1,9 +1,0 @@
-{
-  "$schema": "https://json.schemastore.org/block.json",
-  "apiVersion": 2,
-  "title": "360 JavaScript Viewer",
-  "name": "jsviewer/default-viewer",
-  "category": "media",
-  "example": {},
-  "editorScript": "file:./block.js"
-}

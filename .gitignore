@@ -5,8 +5,8 @@
 !example.env
 !wp-content/
 !wp-content/plugins/
-!wp-content/plugins/configurator-3dweb/
-!wp-content/plugins/configurator-3dweb/**
+!wp-content/plugins/3dweb-print-studio/
+!wp-content/plugins/3dweb-print-studio/**
 !.github/
 !.github/**
 !plugin-assets/
