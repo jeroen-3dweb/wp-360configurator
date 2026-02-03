@@ -1,16 +1,16 @@
-<div class="cnf-3dweb__admin-wrapper cnf-3dweb">
-    <header class="cnf-3dweb__swoosh-header"></header>
-    <div class="cnf-3dweb__swoosh-container">
-        <div class="cnf-3dweb__swoosh-container">
+<div class="dweb_ps dweb_ps__admin-wrapper">
+    <header class="dweb_ps__swoosh-header"></header>
+    <div class="dweb_ps__swoosh-container">
+        <div class="dweb_ps__swoosh-container">
             <div style="margin-top: 0px;">
-                <div class="cnf-3dweb__backdrop">
-                    <div class="cnf-3dweb__backdrop-container">
-                        <div class="cnf-3dweb__backdrop-header">
-                            <div class="cnf-3dweb__logo-poppins"></div>
+                <div class="dweb_ps__backdrop">
+                    <div class="dweb_ps__backdrop-container">
+                        <div class="dweb_ps__backdrop-header">
+                            <div class="dweb_ps__logo-poppins"></div>
                             <div>
                                 <img src="<?php
-                                echo plugins_url('admin/img/sign-130.png', CNF3DWEB_MAIN_URL) ?>" class="cnf-3dweb__logo"
+                                echo plugins_url('admin/img/sign-130.png', DWEBPS_MAIN_URL) ?>" class="dweb_ps__logo"
                                      alt="logo">
                             </div>
                         </div>
-                        <div class="cnf-3dweb__card">
+                        <div class="dweb_ps__card">

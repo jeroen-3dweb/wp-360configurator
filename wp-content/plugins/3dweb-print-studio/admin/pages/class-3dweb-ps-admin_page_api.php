@@ -10,7 +10,7 @@ class DWeb_PS_ADMIN_API extends DWeb_PS_ADMIN_PAGE_ABSTRACT
     
     // Register custom AJAX hooks for this page
     protected $customAjaxHooks = [
-        '3dweb-ps-check-auth' => 'ajax_check_auth',
+        'dweb_ps-check-auth' => 'ajax_check_auth',
     ];
 
     const TOKEN = 'DWEBPS_token';
@@ -62,6 +62,21 @@ class DWeb_PS_ADMIN_API extends DWeb_PS_ADMIN_PAGE_ABSTRACT
                 'data'    => $result,
             ]);
         }
+
+		// test if data contains an error
+		if (isset($result['error'])) {
+			wp_send_json_error([
+				'message' => 'Authenticatie mislukt: ' . $result['error'],
+				'data'    => $result,
+			]);
+		}
+
+		if($result === null){
+			wp_send_json_error([
+				'message' => 'Authenticatie mislukt: Onbekende fout',
+				'data'    => $result,
+			]);
+		}
 
         wp_send_json_success([
             'message' => 'Authenticatie gelukt.',

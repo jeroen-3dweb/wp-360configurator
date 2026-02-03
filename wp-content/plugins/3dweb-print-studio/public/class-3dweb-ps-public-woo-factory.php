@@ -33,17 +33,31 @@ class DWeb_PS_Public_Woo_Factory
         $this->version = $version;
     }
 
+	private function loadTheme($theme)
+	{
+		$theme = strtolower($theme);
+		$theme_class_file = dirname(__FILE__) . '/themes/' . strtolower($theme) . '/class-3dweb-ps-public-woo-' . strtolower($theme) . '.php';
+
+		if (file_exists($theme_class_file)) {
+			require_once $theme_class_file;
+			return true;
+		}
+		return false;
+	}
+
     public function create($theme)
     {
         require_once dirname(__FILE__) . '/themes/class-3dweb-ps-public-woo-base.php';
 
-        switch ($theme) {
-            case 'astra':
-                require_once dirname(__FILE__) . '/themes/astra/class-3dweb-ps-public-woo-astra.php';
-                return new DWeb_PS_Public_Woo_Astra($this->plugin_name, $this->version);
-            default:
-                require_once dirname(__FILE__) . '/themes/astra/class-3dweb-ps-public-woo-astra.php';
-                return new DWeb_PS_Public_Woo_Astra($this->plugin_name, $this->version);
-        }
+
+		if($this->loadTheme($theme)){
+			$class_name = 'DWeb_PS_Public_Woo_' . ucfirst(strtolower($theme));
+			if (class_exists($class_name)) {
+				return new $class_name($this->plugin_name, $this->version);
+			}
+		}
+
+	    $this->loadTheme('default');
+	    return new DWeb_PS_Public_Woo_Default($this->plugin_name, $this->version);
     }
 }

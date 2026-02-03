@@ -1,0 +1,20 @@
+/* Default theme styles */
+#3dweb_ps-start-configuration {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007cba;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+#3dweb_ps-start-configuration:hover {
+    background-color: #006ba1;
+}
+
+#cnf-jsv-holder {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+}

@@ -1,36 +1,40 @@
-.cnf-3dweb__home {
+@use "colors";
+@use "mixins";
 
-  &__negative{
-    color:red;
-  }
+.dweb_ps {
+  &__home {
+    &__negative {
+      color: red;
+    }
 
-  &__card-holder {
-    display: flex;
-    justify-content: space-between;
-    background-color: $back-ground-grey;
-
-    &__card {
-      @include card-defaults;
-      max-width: 50%;
-      background-color: #fff;
-      margin: 3em;
+    &__card-holder {
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: space-between;
+      background-color: colors.$back-ground-grey;
 
-      a {
-        margin-top: 2em;
-      }
-      p {
-        text-align: center;
+      &__card {
+        @include mixins.card-defaults;
+        max-width: 50%;
+        background-color: #fff;
+        margin: 3em;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+
+        a {
+          margin-top: 2em;
+        }
+
+        p {
+          text-align: center;
+        }
       }
     }
-  }
 
-  ul {
-    li {
-      // green round bullet
+    ul {
+      li {
+        // green round bullet
         list-style-type: none;
         position: relative;
         padding-left: 1.5em;
@@ -39,6 +43,7 @@
         font-weight: 500;
         line-height: 2em;
         text-align: left;
+
         &:before {
           content: '';
           position: absolute;
@@ -47,38 +52,40 @@
           width: 1em;
           height: 1em;
           border-radius: 50%;
-          background-color: $primary;
+          background-color: colors.$primary;
         }
 
 
-      &:nth-child(even) {
-        //background-color: #d7d7d9;
+        &:nth-child(even) {
+          //background-color: #d7d7d9;
+        }
+
+        &:not(:last-child) {
+          //border-bottom: 2px solid rgba(128, 128, 128, 0.3);
+          //margin-bottom: 10px;
+          color: #000;
+
+        }
       }
 
-      &:not(:last-child) {
-        //border-bottom: 2px solid rgba(128, 128, 128, 0.3);
-        //margin-bottom: 10px;
-        color: #000;
-
+      li.negative {
+        &:before {
+          background-color: red;
+        }
       }
     }
-    li.negative {
-      &:before {
-        background-color: red;
+
+    &__step {
+      margin-bottom: 20px;
+
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+
+
+      p {
+        width: 70%;
       }
-    }
-  }
-
-  &__step {
-    margin-bottom: 20px;
-
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-
-
-    p {
-      width: 70%;
     }
   }
 }

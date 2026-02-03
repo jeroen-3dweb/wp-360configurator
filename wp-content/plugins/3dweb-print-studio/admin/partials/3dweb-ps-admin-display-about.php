@@ -7,23 +7,37 @@
 include('header.php');
 
 ?>
-    <div class="3dweb-ps__settings">
-        <h2>3D Print Studio</h2>
+    <div class="dweb_ps__settings">
+        <h2>3DWeb Print Studio</h2>
         <p>
-            Configure your products in 3D
+            3DWeb Print Studio turns print customization into a real-time 3D experience — fully brandable, easy to integrate, and built for modern B2B and B2C workflows.<br>
+            <a href="https://3dweb.io" target="_blank">Learn more</a>
         </p>
 
-        <h4>basic</h4>
+        <hr>
+
+        <h3>Basic</h3>
         <ul>
             <li>Version: <?php echo esc_html(DWEBPS_VERSION); ?></li>
-            <li>License: <?php echo esc_html(get_option(DWeb_PS_ADMIN_API::TOKEN, 'Free version')); ?></li>
         </ul>
-        <h4>plugins</h4>
+
+        <hr>
+
+        <h3>E-Commerce</h3>
         <ul>
             <li>WooCommerce (<?php echo DWeb_PS_WOO::woocommerceIsActive() ? 'active' : "not active, it won't work without it"; ?>)</li>
-            <li>360 Javascript Viewer (<?php echo DWeb_PS_JAVASCRIPTVIEWER::javascriptviewerIsActive() ? 'active' : 'not active'; ?>)</li>
         </ul>
-        <h4>Theme</h4>
+
+        <hr>
+
+        <h3>Extra</h3>
+        <ul>
+            <li>360 Javascript Viewer <small>(used for 360 result of model with print)</small> (<?php echo DWeb_PS_JAVASCRIPTVIEWER::javascriptviewerIsActive() ? 'active' : 'not active'; ?>)</li>
+        </ul>
+
+        <hr>
+
+        <h3>Current Theme</h3>
         <ul>
             <li><?php echo esc_html(wp_get_theme()->get('Name')); ?></li>
         </ul>

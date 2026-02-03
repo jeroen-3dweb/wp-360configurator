@@ -1,4 +1,4 @@
-.cnf-3dweb__button {
+.dweb_ps__button {
   align-items: center;
   background-color: #a5c100;
   color: #ffffff;
@@ -8,26 +8,26 @@
   border-radius: 10px;
   text-decoration: none;
 }
-.cnf-3dweb__button--normal {
+.dweb_ps__button--normal {
   min-width: 200px;
   box-shadow: inset 0 0 0 1px;
   text-align: center;
   color: white;
 }
-.cnf-3dweb__button--normal:hover {
+.dweb_ps__button--normal:hover {
   cursor: pointer;
-  background-color: white;
+  background-color: hsl(68.7046632124, 100%, 117.8431372549%);
   color: rgb(121.3989637306, 142, 0);
 }
-.cnf-3dweb__button--outlined {
+.dweb_ps__button--outlined {
   text-align: center;
   background-color: transparent;
   color: #a5c100;
   border: 1px solid #a5c100;
 }
-.cnf-3dweb__button--outlined:hover {
+.dweb_ps__button--outlined:hover {
   cursor: pointer;
-  background-color: white;
+  background-color: hsl(68.7046632124, 100%, 117.8431372549%);
   color: rgb(121.3989637306, 142, 0);
 }
 
@@ -56,20 +56,21 @@
   line-height: 1.5em;
 }
 
-.cnf-3dweb-mt-2 {
+.dweb_ps-mt-2 {
   margin-top: 0.5rem !important;
 }
-.cnf-3dweb-mb-2 {
+
+.dweb_ps-mb-2 {
   margin-bottom: 0.5rem !important;
 }
 
-.cnf-3dweb__admin-wrapper {
+.dweb_ps__admin-wrapper {
   margin-right: 20px;
   margin-top: 20px;
   font-size: 14px;
   font-family: "Roboto,Helvetica Neue,Arial", sans-serif;
 }
-.cnf-3dweb__card {
+.dweb_ps__card {
   background-attachment: scroll;
   background-clip: border-box;
   background-color: rgb(255, 255, 255);
@@ -97,16 +98,16 @@
   -webkit-font-smoothing: antialiased;
   padding: 15px;
 }
-.cnf-3dweb__swoosh-container {
+.dweb_ps__swoosh-container {
   margin: 0 auto;
   position: relative;
 }
-.cnf-3dweb__swoosh-header {
+.dweb_ps__swoosh-header {
   align-items: center;
   display: flex;
   position: relative;
 }
-.cnf-3dweb__swoosh-header::after {
+.dweb_ps__swoosh-header::after {
   top: 0px;
   left: 0px;
   right: 0px;
@@ -120,56 +121,56 @@
   background-position: 100% 100%;
   bottom: auto !important;
 }
-.cnf-3dweb__backdrop {
+.dweb_ps__backdrop {
   padding: 0 20px;
 }
-.cnf-3dweb__backdrop-container {
+.dweb_ps__backdrop-container {
   margin: 0 auto;
   position: relative;
   padding-top: 40px;
 }
 @media (min-width: 600px) {
-  .cnf-3dweb__backdrop-container {
+  .dweb_ps__backdrop-container {
     max-width: 890px;
   }
 }
-.cnf-3dweb__backdrop-header {
+.dweb_ps__backdrop-header {
   margin-bottom: 20px;
 }
-.cnf-3dweb__logo-poppins {
+.dweb_ps__logo-poppins {
   background-size: contain;
   background-position-y: 50%;
   width: 272px;
   height: 72px;
   background-repeat: no-repeat;
 }
-.cnf-3dweb__logo {
+.dweb_ps__logo {
   position: absolute;
   right: 48px;
   top: 40px;
   z-index: 10;
 }
-.cnf-3dweb__rating {
+.dweb_ps__rating {
   color: white;
   padding: 10px;
   background-color: #a2a2a2;
   text-align: center;
 }
 
-.cnf-3dweb p {
+.dweb_ps__settings p {
   font-size: 1em;
   line-height: 1.5em;
   color: #3b3b3b;
 }
-.cnf-3dweb p.warning {
+.dweb_ps__settings p.warning {
   background-color: #eae3c1;
   padding: 0.5em;
   font-size: 0.8em;
 }
-.cnf-3dweb__button {
+.dweb_ps__button {
   width: 105px;
 }
-.cnf-3dweb__settings {
+.dweb_ps__settings {
   background-color: #f6f6f6;
   padding: 30px 10px 10px 10px;
   min-height: 300px;
@@ -177,21 +178,21 @@
   flex-direction: column;
   justify-content: space-between;
 }
-.cnf-3dweb__settings__holder {
+.dweb_ps__settings a {
+  text-decoration: none;
+  font-weight: 600;
+}
+.dweb_ps__settings__holder {
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
   align-items: center;
 }
-.cnf-3dweb__settings a {
-  text-decoration: none;
-  font-weight: 600;
-}
-.cnf-3dweb__settings__upload-thumb {
+.dweb_ps__settings__upload-thumb {
   width: 80px;
   margin: 0 10px;
 }
-.cnf-3dweb__settings-holder {
+.dweb_ps__settings-holder {
   padding: 10px;
   display: flex;
   align-items: flex-start;
@@ -199,22 +200,22 @@
   align-content: flex-start;
   max-width: 400px;
 }
-.cnf-3dweb__settings-holder__description {
+.dweb_ps__settings-holder__description {
   margin-top: 2px;
   font-size: 0.8em;
   display: inline-block;
 }
-.cnf-3dweb__settings__row {
+.dweb_ps__settings__row {
   display: flex;
   align-items: flex-start;
 }
-.cnf-3dweb__settings__label {
+.dweb_ps__settings__label {
   min-width: 40%;
   padding-top: 10px;
 }
 
-.cnf-3dweb .external-link a[href^=http]::after,
-.cnf-3dweb .external-link a[href^="https://"]::after {
+.dweb_ps .external-link a[href^=http]::after,
+.dweb_ps .external-link a[href^="https://"]::after {
   content: "";
   width: 11px;
   height: 11px;
@@ -225,18 +226,18 @@
   background-size: contain;
   display: inline-block;
 }
-.cnf-3dweb .warn,
-.cnf-3dweb .warn::before,
-.cnf-3dweb .warn::after {
+.dweb_ps .warn,
+.dweb_ps .warn::before,
+.dweb_ps .warn::after {
   position: relative;
   padding: 0;
   margin: 0;
 }
-.cnf-3dweb .warn {
+.dweb_ps .warn {
   font-size: 1.5em;
   color: transparent;
 }
-.cnf-3dweb .warn.warning {
+.dweb_ps .warn.warning {
   display: inline-block;
   top: 0.225em;
   width: 1.15em;
@@ -246,7 +247,7 @@
   background-color: transparent;
   border-radius: 0.625em;
 }
-.cnf-3dweb .warn.warning::before {
+.dweb_ps .warn.warning::before {
   content: "";
   display: block;
   top: -0.08em;
@@ -258,7 +259,7 @@
   border-top-width: 0;
   box-shadow: #999 0 1px 1px;
 }
-.cnf-3dweb .warn.warning::after {
+.dweb_ps .warn.warning::after {
   display: block;
   position: absolute;
   top: 0.3em;
@@ -272,19 +273,19 @@
   color: #333;
 }
 
-.cnf-3dweb__card p {
+.dweb_ps__card p {
   color: rgba(0, 0, 0, 0.9019607843);
 }
 
-.cnf-3dweb__home__negative {
+.dweb_ps__home__negative {
   color: red;
 }
-.cnf-3dweb__home__card-holder {
+.dweb_ps__home__card-holder {
   display: flex;
   justify-content: space-between;
   background-color: #dfdfdf;
 }
-.cnf-3dweb__home__card-holder__card {
+.dweb_ps__home__card-holder__card {
   padding: 2em;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1019607843), 0 2px 4px -1px rgba(0, 0, 0, 0.0588235294) !important;
   border: 0 solid rgba(0, 0, 0, 0.125);
@@ -297,13 +298,13 @@
   align-items: center;
   justify-content: space-between;
 }
-.cnf-3dweb__home__card-holder__card a {
+.dweb_ps__home__card-holder__card a {
   margin-top: 2em;
 }
-.cnf-3dweb__home__card-holder__card p {
+.dweb_ps__home__card-holder__card p {
   text-align: center;
 }
-.cnf-3dweb__home ul li {
+.dweb_ps__home ul li {
   list-style-type: none;
   position: relative;
   padding-left: 1.5em;
@@ -313,7 +314,7 @@
   line-height: 2em;
   text-align: left;
 }
-.cnf-3dweb__home ul li:before {
+.dweb_ps__home ul li:before {
   content: "";
   position: absolute;
   top: 0.5em;
@@ -323,29 +324,29 @@
   border-radius: 50%;
   background-color: #a5c100;
 }
-.cnf-3dweb__home ul li:not(:last-child) {
+.dweb_ps__home ul li:not(:last-child) {
   color: #000;
 }
-.cnf-3dweb__home ul li.negative:before {
+.dweb_ps__home ul li.negative:before {
   background-color: red;
 }
-.cnf-3dweb__home__step {
+.dweb_ps__home__step {
   margin-bottom: 20px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
 }
-.cnf-3dweb__home__step p {
+.dweb_ps__home__step p {
   width: 70%;
 }
 
-.cnf-3dweb__dedicated__card-holder {
+.dweb_ps__dedicated__card-holder {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   background-color: #dfdfdf;
 }
-.cnf-3dweb__dedicated__card-holder__card {
+.dweb_ps__dedicated__card-holder__card {
   padding: 2em;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1019607843), 0 2px 4px -1px rgba(0, 0, 0, 0.0588235294) !important;
   border: 0 solid rgba(0, 0, 0, 0.125);
@@ -357,29 +358,29 @@
   align-items: center;
   justify-content: space-between;
 }
-.cnf-3dweb__dedicated__card-holder__card a {
+.dweb_ps__dedicated__card-holder__card a {
   margin-top: 2em;
 }
-.cnf-3dweb__dedicated__card-holder__card-right {
+.dweb_ps__dedicated__card-holder__card-right {
   width: 50%;
   display: flex;
   justify-content: flex-end;
 }
-.cnf-3dweb__dedicated__card-holder__card-left {
+.dweb_ps__dedicated__card-holder__card-left {
   width: 50%;
 }
-.cnf-3dweb__dedicated ul li:not(:last-child) {
+.dweb_ps__dedicated ul li:not(:last-child) {
   border-bottom: 2px solid rgba(128, 128, 128, 0.3);
   margin-bottom: 10px;
 }
-.cnf-3dweb__dedicated__step {
+.dweb_ps__dedicated__step {
   margin-bottom: 20px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
 }
-.cnf-3dweb__dedicated__step p {
+.dweb_ps__dedicated__step p {
   width: 70%;
 }
 
-/*# sourceMappingURL=cnf-3dweb-admin.css.map */
+/*# sourceMappingURL=3dweb-ps-admin.css.map */

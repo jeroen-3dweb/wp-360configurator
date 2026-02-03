@@ -1,6 +1,6 @@
 <?php
 
-function dwebps_setting_create_row($label, $description, $name, $value, $type = 'number')
+function dwebps_setting_create_row($label, $description, $name, $value, $type = 'number', $disabled = false)
 {
     $checked = '';
     if ($type === 'checkbox') {
@@ -8,22 +8,25 @@ function dwebps_setting_create_row($label, $description, $name, $value, $type = 
         $value   = 1;
     }
 
+    $disabled_attr = $disabled ? 'disabled' : '';
+
     return sprintf(
         '
-            <div class="3dweb-ps__settings__row">
-                    <div class="3dweb-ps__settings__label">
+            <div class="dweb_ps__settings__row">
+                    <div class="dweb_ps__settings__label">
                         %s
                     </div>
-                    <div class="3dweb-ps__settings-holder">
+                    <div class="dweb_ps__settings-holder">
                         <input class="regular-text ltr" type="%s"
                                name="%s"
                                %s
+                               %s
                                value="%s"/>
-                        <small class="3dweb-ps-settings__settings-holder__description">%s. </small>
+                        <small class="dweb_ps-settings__settings-holder__description">%s. </small>
                     </div>
                 </div>
       ',
-        esc_html($label), esc_attr($type), esc_attr($name), $checked, esc_attr($value), esc_html($description));
+        esc_html($label), esc_attr($type), esc_attr($name), $checked, $disabled_attr, esc_attr($value), esc_html($description));
 }
 
 // create select box
@@ -38,13 +41,13 @@ function dwebps_setting_create_select($label, $description, $name, $value, $opti
 
     return sprintf(
         '
-            <div class="3dweb-ps__settings__row">
-                    <div class="3dweb-ps__settings__label">
+            <div class="dweb_ps__settings__row">
+                    <div class="dweb_ps__settings__label">
                         %s
                     </div>
-                    <div class="3dweb-ps__settings-holder">
+                    <div class="dweb_ps__settings-holder">
                         %s
-                        <small class="3dweb-ps-settings__settings-holder__description">%s. </small>
+                        <small class="dweb_ps-settings__settings-holder__description">%s. </small>
                     </div>
                 </div>
       ',

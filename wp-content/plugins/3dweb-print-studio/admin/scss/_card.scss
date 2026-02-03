@@ -1,6 +1,9 @@
-.cnf-3dweb__card{
+@use "colors";
+
+.dweb_ps__card{
 
   p {
-    color: $text-color
+    color: colors.$text-color
   }
+
 }

@@ -1,5 +1,5 @@
-<div class="cnf-3dweb__settings__holder">
-    <p id="cnf-3dweb__save-settings-error" class="cnf-3dweb__error"></p>
-    <a id="cnf-save-settings" class="cnf-3dweb__button cnf-3dweb__button--normal cnf-3dweb__button--outlined">Save
+<div class="dweb_ps__settings__holder">
+    <p id="dweb_ps__save-settings-error" class="dweb_ps__error"></p>
+    <a id="dweb_ps-save-settings" class="dweb_ps__button dweb_ps__button--normal" style="background-color: #a5c100; color: white; font-weight: 600; margin-top: 20px;">Save
     </a>
 </div>

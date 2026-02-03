@@ -3,6 +3,7 @@
 class DWeb_PS_Public_Woo_Base
 {
     const THEME_NAME = 'base';
+    const TEAM_SESSION_REFERENCE = 'teamSessionReference';
 
     /**
      * The ID of this plugin.
@@ -39,8 +40,8 @@ class DWeb_PS_Public_Woo_Base
         $this->plugin_name = $plugin_name;
         $this->version = $version;
 
-        add_action('wp_ajax_cf3dweb_action_get_endpoint', [CNF_3DWeb_Public_Woo_Base::class, 'handle_get_endpoint_request']);
-        add_action('wp_ajax_nopriv_cf3dweb_action_get_endpoint', [CNF_3DWeb_Public_Woo_Base::class, 'handle_get_endpoint_request']);
+        add_action('wp_ajax_3dweb_ps_action_get_endpoint', [DWeb_PS_Public_Woo_Base::class, 'handle_get_endpoint_request']);
+        add_action('wp_ajax_nopriv_3dweb_ps_action_get_endpoint', [DWeb_PS_Public_Woo_Base::class, 'handle_get_endpoint_request']);
 
     }
 
@@ -50,14 +51,6 @@ class DWeb_PS_Public_Woo_Base
         return 'cnf-' . '-' . substr(str_shuffle($permitted_chars), 0, 10);
     }
 
-    protected function getBBCode()
-    {
-        /** @var WC_Product $product */
-        global $product;
-        return $product ? $product->get_meta(CNF_3DWeb_WOO_METABOX::FIELD_PRODUCT_ID) ?: null : null;
-    }
-
-
     /**
      * Register the JavaScript for the public-facing side of the site.
      *
@@ -65,13 +58,31 @@ class DWeb_PS_Public_Woo_Base
      */
     protected function enqueue_scripts_based_on_theme($theme)
     {
-        $path = sprintf('%s/%s/woo_%s.js', plugin_dir_url(__FILE__), $theme, $theme);
+        $theme_js_path = sprintf('%s/%s/woo_%s.js', plugin_dir_url(__FILE__), $theme, $theme);
+        $theme_js_file = sprintf('%s/%s/woo_%s.js', plugin_dir_path(__FILE__), $theme, $theme);
 
+        // Fallback to default theme if file doesn't exist
+        if (!file_exists($theme_js_file)) {
+            $theme = 'default';
+            $theme_js_path = sprintf('%s/%s/woo_%s.js', plugin_dir_url(__FILE__), $theme, $theme);
+        }
+
+        // Enqueue core JS first
+        wp_enqueue_script(
+            $this->plugin_name . '_public_core',
+            plugin_dir_url(dirname(__FILE__)) . 'js/3dweb-ps-public.js',
+            array('jquery', 'javascriptviewer'),
+            $this->version,
+            true
+        );
+
+        // Enqueue theme-specific JS
         wp_enqueue_script(
             $this->plugin_name . '_woo_js',
-            $path,
-            array('javascriptviewer'),
-            $this->version
+            $theme_js_path,
+            array($this->plugin_name . '_public_core'),
+            $this->version,
+            true
         );
     }
 
@@ -82,10 +93,18 @@ class DWeb_PS_Public_Woo_Base
      */
     public function enqueue_styles_based_on_theme($theme)
     {
-        $path = sprintf('%s/%s/woo_%s.css', plugin_dir_url(__FILE__), $theme, $theme);
+        $theme_css_path = sprintf('%s/%s/woo_%s.css', plugin_dir_url(__FILE__), $theme, $theme);
+        $theme_css_file = sprintf('%s/%s/woo_%s.css', plugin_dir_path(__FILE__), $theme, $theme);
+
+        // Fallback to default theme if file doesn't exist
+        if (!file_exists($theme_css_file)) {
+            $theme = 'default';
+            $theme_css_path = sprintf('%s/%s/woo_%s.css', plugin_dir_url(__FILE__), $theme, $theme);
+        }
+
         wp_enqueue_style(
             $this->plugin_name . '_woo_css',
-            $path,
+            $theme_css_path,
             array(),
             $this->version,
             'all'
@@ -100,23 +119,25 @@ class DWeb_PS_Public_Woo_Base
     public function getProductId()
     {
         global $post;
-        return sanitize_meta(CNF_3DWeb_WOO_METABOX::FIELD_PRODUCT_ID, get_post_meta($post->ID, CNF_3DWeb_WOO_METABOX::FIELD_PRODUCT_ID, true), 'post');
+        return sanitize_meta(DWeb_PS_WOO_METABOX::FIELD_PRODUCT_ID, get_post_meta($post->ID, DWeb_PS_WOO_METABOX::FIELD_PRODUCT_ID, true), 'post');
     }
 
     public function enqueue_scripts()
     {
         global $post;
         $this->enqueue_scripts_based_on_theme(static::THEME_NAME);
-        $productID = sanitize_meta(CNF_3DWeb_WOO_METABOX::FIELD_PRODUCT_ID, get_post_meta($post->ID, CNF_3DWeb_WOO_METABOX::FIELD_PRODUCT_ID, true), 'post');
+        $productID = sanitize_meta(DWeb_PS_WOO_METABOX::FIELD_PRODUCT_ID, get_post_meta($post->ID, DWeb_PS_WOO_METABOX::FIELD_PRODUCT_ID, true), 'post');
 
         $assets = [];
         $teamReference = $this->getTeamReference();
         if ($teamReference) {
-            $response = (new CNF_3DWeb_API())->getSessionAssets($teamReference);
-            $assets = $response['data'];
+            $response = (new DWeb_PS_API())->getSessionAssets($teamReference);
+            if ($response && !isset($response['error']) && !isset($response['errors']) && isset($response['data'])) {
+                $assets = $response['data'];
+            }
         }
         $threeSixtyConfig = [];
-        if (CNF_3DWeb_JAVASCRIPTVIEWER::javascriptviewerIsActive()) {
+        if (DWeb_PS_JAVASCRIPTVIEWER::javascriptviewerIsActive()) {
             $threeSixtyConfig = [
                 'license' => get_option(JSV_360_ADMIN_LICENSE::NOTIFIER_LICENSE, null),
                 'autoRotate' => get_option(JSV_360_ADMIN_AUTOROTATE::AUTOROTATE, null)
@@ -126,39 +147,45 @@ class DWeb_PS_Public_Woo_Base
         // hook for the endpoint request
         wp_localize_script($this->plugin_name . '_woo_js', 'cnf3Dweb', array(
             'ajax_url' => admin_url('admin-ajax.php'),
-            'security' => wp_create_nonce('cnf-3dweb-nonce'),
-            'action' => 'cf3dweb_action_get_endpoint',
+            'security' => wp_create_nonce('3dweb_ps-nonce'),
+            'action' => '3dweb_ps_action_get_endpoint',
             'product_id' => $productID,
             'assets' => $assets,
             'team_reference' => $this->getTeamReference(),
-            'useThreeSixtyView' => get_option(CNF_3DWeb_ADMIN_OPTIONS::CONFIGURATOR_USE_THREESIXTY, false),
-            'threeSixtyConfig' => $threeSixtyConfig
+            'team_reference_key' => self::TEAM_SESSION_REFERENCE,
+            'useThreeSixtyView' => get_option(DWeb_PS_ADMIN_OPTIONS::CONFIGURATOR_USE_THREESIXTY, false),
+            'debug' => get_option(DWeb_PS_ADMIN_OPTIONS::CONFIGURATOR_DEBUG, false),
+            'threeSixtyConfig' => $threeSixtyConfig,
+	        'translations' => array(
+		        'startConfiguration' => __('Start configuration', '3dweb-print-studio'),
+		        'loading' => __('Loading 3...', '3dweb-print-studio'),
+	        )
         ));
     }
 
 
-    private function getSession()
+    private static function getSession()
     {
         $productId = sanitize_text_field($_POST['product_id']);
         $callbackUrl = sanitize_text_field($_POST['post_url']);
 
-        return (new CNF_3DWeb_API())->createNewSession($productId, $callbackUrl);
+        return (new DWeb_PS_API())->createNewSession($productId, $callbackUrl);
     }
 
-    public function handle_get_endpoint_request()
+    public static function handle_get_endpoint_request()
     {
-        check_ajax_referer('cnf-3dweb-nonce', 'security');
+        check_ajax_referer('3dweb_ps-nonce', 'security');
 
         $method = sanitize_text_field($_POST['method']);
 
         switch ($method) {
 
             case 'get_session':
-                $response = $this->getSession();
+                $response = self::getSession();
                 break;
 
             case 'get_assets':
-                $self = new self('cnf-3dweb', '1.0.0');
+                $self = new self('3dweb_ps', '1.0.0');
                 $self->loadSessionUrls();
                 $response = $self->mainImages;
                 break;
@@ -169,16 +196,22 @@ class DWeb_PS_Public_Woo_Base
         }
 
 
-        if ($response === false || is_wp_error($response)) {
+        if ($response === false || isset($response['error']) || isset($response['errors'])) {
             $error_message = 'Something went wrong';
-            if (is_wp_error($response)) {
-                $error_data = $response->get_error_data();
-                if (is_array($error_data) && isset($error_data['message'])) {
-                    $error_message = $error_data['message'];
-                } elseif (is_array($error_data) && isset($error_data['error'])) {
-                    $error_message = $error_data['error'];
-                } else {
-                    $error_message = $response->get_error_message();
+            if (is_array($response)) {
+                if (isset($response['message'])) {
+                    $error_message = $response['message'];
+                } elseif (isset($response['error'])) {
+                    $error_message = $response['error'];
+                } elseif (isset($response['errors'])) {
+                    // Handle multiple errors if returned by API
+                    if (is_array($response['errors'])) {
+                        $error_message = implode(', ', array_map(function($err) {
+                            return is_array($err) ? implode(': ', $err) : $err;
+                        }, $response['errors']));
+                    } else {
+                        $error_message = $response['errors'];
+                    }
                 }
             }
             wp_send_json_error(['message' => $error_message]);
@@ -189,30 +222,21 @@ class DWeb_PS_Public_Woo_Base
 
     private function getTeamReference()
     {
-        return $_GET['teamSessionReference'] ?? null;
+        return $_GET[self::TEAM_SESSION_REFERENCE] ?? null;
     }
 
-
-    private function pretty_var_dump($data)
-    {
-        echo '<pre>';
-        var_dump($data);
-        echo '</pre>';
-    }
 
     public function handleAddCustomHiddenField()
     {
-        if (isset($_GET['teamSessionReference'])) {
-            echo '<input type="hidden" name="teamSessionReference" value="' . esc_attr($_GET['teamSessionReference']) . '">';
+        if (isset($_GET[self::TEAM_SESSION_REFERENCE])) {
+            echo '<input type="hidden" name="' . self::TEAM_SESSION_REFERENCE . '" value="' . esc_attr($_GET[self::TEAM_SESSION_REFERENCE]) . '">';
         }
     }
 
     public function handleAddToCartItem($cart_item_data, $productID)
     {
-        $hasTeamSessionReference = isset($_POST['teamSessionReference']);
-
-        if ($hasTeamSessionReference && $productID) {
-            $cart_item_data['teamSessionReference'] = $_POST['teamSessionReference'];
+        if (isset($_POST[self::TEAM_SESSION_REFERENCE]) && $productID) {
+            $cart_item_data[self::TEAM_SESSION_REFERENCE] = $_POST[self::TEAM_SESSION_REFERENCE];
         }
         return $cart_item_data;
     }
@@ -220,26 +244,19 @@ class DWeb_PS_Public_Woo_Base
 
     public function handleGetItemData($item_data, $cart_item)
     {
-//        $this->pretty_var_dump($cart_item);
-//        $this->pretty_var_dump( $item_data);
-        if (isset($cart_item['teamSessionReference'])) {
+        if (isset($cart_item[self::TEAM_SESSION_REFERENCE])) {
             $item_data[] = array(
                 'key' => 'reference',
-                'value' => wc_clean($cart_item['teamSessionReference'])
+                'value' => wc_clean($cart_item[self::TEAM_SESSION_REFERENCE])
             );
-//
-//            $item_data[] = array(
-//                'key' => 'test',
-//                'value' => '<img src="https://bordex.gumlet.io/organisations/01939c63-53a6-f69d-3f3b-080ed0aaffdd/sessions/67d2e255c77d2/generated/360/67d2e255c77d2_16.png?height=400&width=480&t=1741879316293"/>'
-//            );
         }
         return $item_data;
     }
 
     public function handleCreateOrderLineItem($item, $cart_item_key, $values, $order)
     {
-        if (isset($values['teamSessionReference'])) {
-            $item->add_meta_data('teamSessionReference', $values['teamSessionReference'], true);
+        if (isset($values[self::TEAM_SESSION_REFERENCE])) {
+            $item->add_meta_data(self::TEAM_SESSION_REFERENCE, $values[self::TEAM_SESSION_REFERENCE], true);
         }
         return $item;
     }
@@ -249,7 +266,7 @@ class DWeb_PS_Public_Woo_Base
 //
 //                $this->pretty_var_dump($image);
 //                $this->pretty_var_dump($cart_item);
-        if (isset($cart_item['teamSessionReference']) && !empty($cart_item['teamSessionReference'])) {
+        if (isset($cart_item[self::TEAM_SESSION_REFERENCE]) && !empty($cart_item[self::TEAM_SESSION_REFERENCE])) {
 
         }
         return $image;
@@ -258,17 +275,18 @@ class DWeb_PS_Public_Woo_Base
 
     private function loadSessionUrls()
     {
-        $hasTeamSessionReference = isset($_GET['teamSessionReference']);
-        if ($hasTeamSessionReference && !$this->sessionImagesLoaded) {
-            $teamReference = sanitize_text_field($_GET['teamSessionReference']);
-            $response = (new CNF_3DWeb_API())->getSessionAssets($teamReference);
-            if (!$response) {
+        if (isset($_GET[self::TEAM_SESSION_REFERENCE]) && !$this->sessionImagesLoaded) {
+            $teamReference = sanitize_text_field($_GET[self::TEAM_SESSION_REFERENCE]);
+            $response = (new DWeb_PS_API())->getSessionAssets($teamReference);
+            if (!$response || isset($response['error']) || isset($response['errors'])) {
                 return;
             }
             $this->sessionImagesLoaded = true;
 
             $this->mainImages = array_map(
-                fn($key) => $response['data'][$key],
+                function($key) use ($response) {
+                    return $response['data'][$key];
+                },
                 ['main_0', 'main_90', 'main_180', 'main_270']
             );
         }

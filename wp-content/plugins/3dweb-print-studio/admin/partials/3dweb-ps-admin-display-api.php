@@ -9,14 +9,19 @@ include('header.php');
 include('3dweb-ps-settings-helper.php');
 
 ?>
-    <div class="3dweb-ps__settings">
+    <div class="dweb_ps__settings">
         <h2>API Credentials</h2>
-        <p>Enter your API credentials to enable the plugin.
+        <p>Enter your API credentials to enable the plugin.</p>
+        <p>
+            <strong>Don't have credentials yet?</strong>
+            You can obtain your API credentials from <a href="https://3dweb.io" target="_blank" rel="noopener noreferrer">3dweb.io</a>.
         </p>
+
+        <hr>
 
         <form method='post' data-source="<?php echo esc_attr(DWeb_PS_ADMIN_API::PATH); ?>">
 
-            <div class="3dweb-ps__settings__table">
+            <div class="dweb_ps__settings__table">
                 <?php echo dwebps_setting_create_row(
                         'Token',
                         '',
@@ -41,17 +46,20 @@ include('3dweb-ps-settings-helper.php');
                         ]
                 );
                 ?>
+            </div>
 
-                <div class="3dweb-ps__settings__row">
-                    <div class="3dweb-ps__settings__label">
-                        <a id="3dweb-ps-test-auth" class="3dweb-ps__button 3dweb-ps__button--normal">Test credentials</a>
+                <div class="dweb_ps__settings__row">
+                    <div class="dweb_ps__settings__label">
+                        <a id="dweb_ps-test-auth" class="dweb_ps__button dweb_ps__button--normal">Test credentials</a>
                     </div>
-                    <div class="3dweb-ps__settings-holder">
-                        <small id="3dweb-ps__check-auth-result" class=""></small>
+                    <div class="dweb_ps__settings-holder">
+                        <small id="dweb_ps__check-auth-result" class=""></small>
                     </div>
                 </div>
-            </div>
         </form>
+
+        <hr style="margin: 30px 0;">
+
         <?php
         include('button.php'); ?>
 

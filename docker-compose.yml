@@ -10,20 +10,25 @@ services:
       - "8000:80"
     environment:
       - XDEBUG_MODE=${XDEBUG_MODE:-off}
+      - WP_ENV=${WP_ENV:-development}
+      - WP_DEBUG=${WP_DEBUG:-true}
+      - WP_DEBUG_LOG=${WP_DEBUG_LOG:-true}
+      - WP_DEBUG_DISPLAY=${WP_DEBUG_DISPLAY:-true}
+      - WP_DB_PORT ${WP_DB_PORT:-3309}
     env_file:
       - .env
     volumes:
       - ./wp-content/plugins:/var/www/html/wp-content/plugins:delegated
       - ./wp-content/themes:/var/www/html/wp-content/themes:delegated
-    links:
-      - mysql-configurator
     networks:
       - wpconfigurator
+    depends_on:
+      - mysql-configurator
   mysql-configurator:
     container_name: wp-360configurator-mysql
     image: mysql:5.7
     ports:
-      - "3307:3306"
+      - "3009:3306"
     networks:
       - wpconfigurator
     environment:

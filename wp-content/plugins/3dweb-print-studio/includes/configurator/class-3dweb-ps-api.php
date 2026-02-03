@@ -49,16 +49,25 @@ class DWeb_PS_API
         $args = $this->getArgs();
 
         $response = wp_remote_get($url, $args);
-
+//
         if (is_wp_error($response)) {
-            return $response;
+            return [
+                'error' => $response->get_error_message()
+            ];
         }
 
         $body = wp_remote_retrieve_body($response);
         $code = wp_remote_retrieve_response_code($response);
 
         if ($code != 200) {
-            return new WP_Error('api_error', 'API returned code ' . $code, json_decode($body, true));
+            $data = json_decode($body, true);
+            if (!is_array($data)) {
+                $data = [
+                    'error' => 'API returned code ' . $code,
+                    'body' => $body
+                ];
+            }
+            return $data;
         }
 
         return json_decode($body, true);
@@ -75,14 +84,23 @@ class DWeb_PS_API
         $response = wp_remote_post($url, $args);
 
         if (is_wp_error($response)) {
-            return $response;
+            return [
+                'error' => $response->get_error_message()
+            ];
         }
 
         $body = wp_remote_retrieve_body($response);
         $code = wp_remote_retrieve_response_code($response);
 
         if ($code != 200) {
-            return new WP_Error('api_error', 'API returned code ' . $code, json_decode($body, true));
+            $data = json_decode($body, true);
+            if (!is_array($data)) {
+                $data = [
+                    'error' => 'API returned code ' . $code,
+                    'body' => $body
+                ];
+            }
+            return $data;
         }
 
         return json_decode($body, true);

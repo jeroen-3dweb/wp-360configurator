@@ -1,9 +1,9 @@
-<div class="cnf-3dweb__rating">If you like this plugin please leave us a 5 &#9733 rating. A
+<div class="dweb_ps__rating">If you like this plugin please leave us a 5 &#9733 rating. A
     huge
     thanks in
     advance!
     <a href="https://wordpress.org/plugins/360deg-javascript-viewer/#reviews?rate=5#new-post"
-       target="_blank" class="cnf-rating-link">&#9733;&#9733;&#9733;&#9733;&#9733;</a>
+       target="_blank" class="dweb_ps-rating-link">&#9733;&#9733;&#9733;&#9733;&#9733;</a>
 </div>
 </div>
 </div>
