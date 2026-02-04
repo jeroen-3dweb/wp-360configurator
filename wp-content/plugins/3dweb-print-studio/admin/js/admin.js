@@ -80,24 +80,25 @@ jQuery(function ($) {
         e.preventDefault();
         const $btn = $(e.target);
         const $result = $('#dweb_ps__check-auth-result');
-        $btn.html('testen...');
+        $btn.html('testing...');
         $result.removeClass('dweb_ps__error').removeClass('dweb_ps__success').html('');
 
         window.DWEB_PS_ADMIN
             .sync('dweb_ps-check-auth', {}, 'get')
             .then((res) => {
+                console.log(res);
                 $btn.html('Test credentials');
-                const teamName = (res && res.data && res.data.data && res.data.data.team && res.data.data.team.name)
-                    ? res.data.data.team.name
+                const teamName = (res && res.data  && res.data.team && res.data.team.name)
+                    ? res.data.team.name
                     : null;
                 const msg = teamName
                     ? `successfully connected to ${teamName}`
-                    : (res.data && res.data.message ? res.data.message : 'Authenticatie gelukt.');
+                    : (res.data && res.data.message ? res.data.message : res.data.message);
                 $result.addClass('dweb_ps__success').html(msg);
             })
             .catch((err) => {
-                $btn.html('Probeer opnieuw');
-                const msg = (err && err.data && err.data.message) ? err.data.message : (err.message || 'Authenticatie mislukt.');
+                $btn.html('Try again');
+                const msg = (err && err.data && err.data.message) ? err.data.message : (err.message || 'Authentication failed.');
                 $result.addClass('dweb_ps__error').html(msg);
                 console.warn(err);
             });

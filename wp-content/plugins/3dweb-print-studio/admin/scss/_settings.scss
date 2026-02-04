@@ -1,4 +1,6 @@
 //settings
+@use "colors";
+
 .dweb_ps {
   &__settings p {
     font-size: 1em;
@@ -57,14 +59,30 @@
     }
 
 
+    &__table {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 15px 30px;
+    }
+
     &__row {
-      display: flex;
-      align-items: flex-start;
+      display: contents;
+
+      & > div {
+        border-bottom: 1px solid colors.$back-ground-grey;
+
+        &:first-child > div {
+          white-space: nowrap;
+        }
+      }
+
+      &:last-of-type > div {
+        border-bottom: none;
+      }
     }
 
     &__label {
-      min-width: 40%;
-      padding-top: 10px;
+      font-weight: 600;
     }
   }
 }

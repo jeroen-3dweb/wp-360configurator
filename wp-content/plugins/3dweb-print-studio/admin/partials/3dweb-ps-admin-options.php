@@ -19,11 +19,12 @@ include('3dweb-ps-settings-helper.php');
             <div class="dweb_ps__settings__table">
                 <?php
                 $is_active = DWeb_PS_JAVASCRIPTVIEWER::javascriptviewerIsActive();
-                $label = $is_active ? 'Use 360 viewer' : 'Use 360 viewer (requires 360 Javascript Viewer!)';
+                $label = $is_active ? 'Use 360 viewer' : 'Use 360 viewer';
+                $description = $is_active ? 'Use 360 viewer to show 360 result of the model with print.' : 'You must activate the 360 viewer plugin to use this feature.';
 
                 echo dwebps_setting_create_row(
                     $label,
-                    '',
+                    $description,
                     DWeb_PS_ADMIN_OPTIONS::CONFIGURATOR_USE_THREESIXTY,
                     get_option(DWeb_PS_ADMIN_OPTIONS::CONFIGURATOR_USE_THREESIXTY, false),
                     'checkbox',

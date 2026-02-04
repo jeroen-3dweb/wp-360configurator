@@ -49,7 +49,6 @@ class DWeb_PS_API
         $args = $this->getArgs();
 
         $response = wp_remote_get($url, $args);
-//
         if (is_wp_error($response)) {
             return [
                 'error' => $response->get_error_message()

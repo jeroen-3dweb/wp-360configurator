@@ -205,13 +205,25 @@
   font-size: 0.8em;
   display: inline-block;
 }
+.dweb_ps__settings__table {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 15px 30px;
+}
 .dweb_ps__settings__row {
-  display: flex;
-  align-items: flex-start;
+  display: contents;
+}
+.dweb_ps__settings__row > div {
+  border-bottom: 1px solid #dfdfdf;
+}
+.dweb_ps__settings__row > div:first-child > div {
+  white-space: nowrap;
+}
+.dweb_ps__settings__row:last-of-type > div {
+  border-bottom: none;
 }
 .dweb_ps__settings__label {
-  min-width: 40%;
-  padding-top: 10px;
+  font-weight: 600;
 }
 
 .dweb_ps .external-link a[href^=http]::after,

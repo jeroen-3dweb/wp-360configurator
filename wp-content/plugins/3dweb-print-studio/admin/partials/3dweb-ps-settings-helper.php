@@ -13,20 +13,23 @@ function dwebps_setting_create_row($label, $description, $name, $value, $type = 
     return sprintf(
         '
             <div class="dweb_ps__settings__row">
+            <div style="display: flex; align-items: start;flex-direction: column;">
                     <div class="dweb_ps__settings__label">
                         %s
                     </div>
+                         <small class="dweb_ps-settings__settings-holder__description">%s. </small>
+                   </div>
                     <div class="dweb_ps__settings-holder">
                         <input class="regular-text ltr" type="%s"
                                name="%s"
                                %s
                                %s
                                value="%s"/>
-                        <small class="dweb_ps-settings__settings-holder__description">%s. </small>
+                   
                     </div>
                 </div>
       ',
-        esc_html($label), esc_attr($type), esc_attr($name), $checked, $disabled_attr, esc_attr($value), esc_html($description));
+        esc_html($label), esc_html($description), esc_attr($type), esc_attr($name), $checked, $disabled_attr, esc_attr($value));
 }
 
 // create select box
