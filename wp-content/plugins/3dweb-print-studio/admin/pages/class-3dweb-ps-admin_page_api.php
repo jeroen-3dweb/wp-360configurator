@@ -13,11 +13,11 @@ class DWeb_PS_ADMIN_API extends DWeb_PS_ADMIN_PAGE_ABSTRACT
         'dweb_ps-check-auth' => 'ajax_check_auth',
     ];
 
-    const TOKEN = 'DWEBPS_token';
+    const TOKEN = 'DWEB_PS_token';
 
-    const CONFIGURATOR_HOST = 'DWEBPS_configurator_host';
+    const CONFIGURATOR_HOST = 'DWEB_PS_configurator_host';
 
-    const CONFIGURATOR_HOST_VERSION = 'DWEBPS_configurator_host_version';
+    const CONFIGURATOR_HOST_VERSION = 'DWEB_PS_configurator_host_version';
 
     protected $fields = [
         self::TOKEN,

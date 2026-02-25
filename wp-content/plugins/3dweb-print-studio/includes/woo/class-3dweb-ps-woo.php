@@ -41,7 +41,6 @@ class DWeb_PS_WOO
      */
     private function loadDependencies()
     {
-        require_once plugin_dir_path(dirname(__FILE__)) . '/../public/class-3dweb-ps-public-woo-factory.php';
         require_once plugin_dir_path(dirname(__FILE__)) . '/woo/class-3dweb-ps-woo-metabox.php';
     }
 
@@ -57,6 +56,7 @@ class DWeb_PS_WOO
         $metaBox = new DWeb_PS_WOO_METABOX($this->pluginName, $this->version);
         $this->loader->add_action('add_meta_boxes', $metaBox, 'addBoxes');
         $this->loader->add_action('save_post', $metaBox, 'saveBoxes');
+        $this->loader->add_action('wp_ajax_dweb_ps_search_products', $metaBox, 'searchProducts');
     }
 
     /**
@@ -69,7 +69,7 @@ class DWeb_PS_WOO
     private function definePublicHooks()
     {
         $currentTheme = wp_get_theme();
-        $pluginPublicWoo = (new DWeb_PS_Public_Woo_Factory($this->pluginName, $this->version))->create($currentTheme->get('Name'));
+        $pluginPublicWoo = (new DWeb_PS_Public_Theme_Factory($this->pluginName, $this->version))->createWooThemeClass($currentTheme->get('Name'));
 
         $this->loader->add_filter('woocommerce_cart_item_thumbnail', $pluginPublicWoo, 'handleChangeCartImage', 1, 3);
         $this->loader->add_filter('woocommerce_before_add_to_cart_button', $pluginPublicWoo, 'handleAddCustomHiddenField',10,0);

@@ -14,18 +14,18 @@ License: GPLv2
 if (!defined('ABSPATH')) {
     exit;
 }
-$dwebpsVersion = '1.0.0';
-define('DWEBPS_VERSION', $dwebpsVersion);
-define('DWEBPS_PATH', plugin_dir_path(__FILE__));
-define('DWEBPS_MAIN_URL', __FILE__);
-define('DWEBPS_DOMAIN', '3dweb-ps');
+$dweb_PSVersion = '1.0.0';
+define('DWEB_PS_VERSION', $dweb_PSVersion);
+define('DWEB_PS_PATH', plugin_dir_path(__FILE__));
+define('DWEB_PS_MAIN_URL', __FILE__);
+define('DWEB_PS_DOMAIN', '3dweb-ps');
 
 require plugin_dir_path(__FILE__) . 'includes/class-3dweb-ps.php';
 
 
-function run_dwebps($version)
+function run_dweb_PS($version)
 {
     (new DWeb_PS($version))->run();
 }
 
-run_dwebps($dwebpsVersion);
+run_dweb_PS($dweb_PSVersion);

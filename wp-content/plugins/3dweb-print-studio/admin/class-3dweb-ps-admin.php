@@ -2,7 +2,7 @@
 
 class DWeb_PS_Admin
 {
-    const REDIRECT_OPTION_NAME = 'DWEBPS_do_activation_redirect';
+    const REDIRECT_OPTION_NAME = 'DWEB_PS_do_activation_redirect';
 
     const PLUGIN_MENU_SLUG = '3dweb-ps-main-settings';
 
@@ -21,7 +21,6 @@ class DWeb_PS_Admin
     {
         $this->pluginName = $pluginName;
         $this->version    = $version;
-        $this->loadHelpers();
         $this->loadPages();
         $this->loadHooks();
     }
@@ -54,7 +53,7 @@ class DWeb_PS_Admin
         }
         wp_enqueue_script('3dweb-ps-admin', plugin_dir_url(__FILE__) . 'js/admin.js', array('jquery'), $this->version);
 
-        if(strpos($hook, 'page_3dweb-ps-') === false){
+        if(strpos($hook, 'page_3dweb-ps-') === false && $hook !== 'post.php' && $hook !== 'post-new.php'){
             return;
         }
 
@@ -120,10 +119,5 @@ class DWeb_PS_Admin
             new DWeb_PS_ADMIN_API(),
             new DWeb_PS_ADMIN_OPTIONS(),
         ];
-    }
-
-    private function loadHelpers()
-    {
-        require_once plugin_dir_path(__FILE__) . 'helpers/class-3dweb-ps-helper.php';
     }
 }

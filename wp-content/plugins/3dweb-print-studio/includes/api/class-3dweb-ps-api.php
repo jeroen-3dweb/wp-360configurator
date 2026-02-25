@@ -40,6 +40,15 @@ class DWeb_PS_API
         return $this->performGet($endPoint);
     }
 
+    public function searchProducts($search = '')
+    {
+        $endPoint = 'products';
+        if (!empty($search)) {
+            $endPoint .= '?search=' . urlencode($search);
+        }
+        return $this->performGet($endPoint);
+    }
+
     public function performGet($endPoint)
     {
         $version = get_option(DWeb_PS_ADMIN_API::CONFIGURATOR_HOST_VERSION);

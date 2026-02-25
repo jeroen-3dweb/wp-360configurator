@@ -18,7 +18,7 @@ class DWeb_PS_JAVASCRIPTVIEWER
     private $loader;
 
     /**
-     * CNF constructor.
+     *  constructor.
      *
      * @param $version
      * @param $pluginName

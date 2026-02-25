@@ -9,7 +9,7 @@
                             <div class="dweb_ps__logo-poppins"></div>
                             <div>
                                 <img src="<?php
-                                echo plugins_url('admin/img/sign-130.png', DWEBPS_MAIN_URL) ?>" class="dweb_ps__logo"
+                                echo plugins_url('admin/img/sign-130.png', DWEB_PS_MAIN_URL) ?>" class="dweb_ps__logo"
                                      alt="logo">
                             </div>
                         </div>

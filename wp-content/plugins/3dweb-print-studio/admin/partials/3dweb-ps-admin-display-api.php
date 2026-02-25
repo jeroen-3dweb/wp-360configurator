@@ -11,9 +11,9 @@ include('3dweb-ps-settings-helper.php');
 ?>
     <div class="dweb_ps__settings">
         <h2>API Credentials</h2>
-        <p>Enter your API credentials to enable the plugin.</p>
         <p>
-            <strong>Don't have credentials yet?</strong>
+            Enter your API credentials to enable the plugin.<br>
+            Don't have credentials yet?
             You can obtain your API credentials from <a href="https://3dweb.io" target="_blank" rel="noopener noreferrer">3dweb.io</a>.
         </p>
 

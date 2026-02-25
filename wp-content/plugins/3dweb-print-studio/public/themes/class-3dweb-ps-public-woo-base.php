@@ -51,81 +51,46 @@ class DWeb_PS_Public_Woo_Base
         return 'cnf-' . '-' . substr(str_shuffle($permitted_chars), 0, 10);
     }
 
+	protected function loadExtraScripts(){
+	}
+
+	protected function loadExtraStyles(){
+	}
+
     /**
      * Register the JavaScript for the public-facing side of the site.
      *
      * @since    1.5.0
      */
-    protected function enqueue_scripts_based_on_theme($theme)
+    protected function loadScripts()
     {
-        $theme_js_path = sprintf('%s/%s/woo_%s.js', plugin_dir_url(__FILE__), $theme, $theme);
-        $theme_js_file = sprintf('%s/%s/woo_%s.js', plugin_dir_path(__FILE__), $theme, $theme);
-
-        // Fallback to default theme if file doesn't exist
-        if (!file_exists($theme_js_file)) {
-            $theme = 'default';
-            $theme_js_path = sprintf('%s/%s/woo_%s.js', plugin_dir_url(__FILE__), $theme, $theme);
-        }
-
-        // Enqueue core JS first
         wp_enqueue_script(
             $this->plugin_name . '_public_core',
             plugin_dir_url(dirname(__FILE__)) . 'js/3dweb-ps-public.js',
-            array('jquery', 'javascriptviewer'),
+            array('jquery'),
             $this->version,
             true
         );
 
-        // Enqueue theme-specific JS
-        wp_enqueue_script(
-            $this->plugin_name . '_woo_js',
-            $theme_js_path,
-            array($this->plugin_name . '_public_core'),
-            $this->version,
-            true
-        );
-    }
-
-    /**
-     * Register the stylesheets for the public-facing side of the site.
-     *
-     * @since    1.5.0
-     */
-    public function enqueue_styles_based_on_theme($theme)
-    {
-        $theme_css_path = sprintf('%s/%s/woo_%s.css', plugin_dir_url(__FILE__), $theme, $theme);
-        $theme_css_file = sprintf('%s/%s/woo_%s.css', plugin_dir_path(__FILE__), $theme, $theme);
-
-        // Fallback to default theme if file doesn't exist
-        if (!file_exists($theme_css_file)) {
-            $theme = 'default';
-            $theme_css_path = sprintf('%s/%s/woo_%s.css', plugin_dir_url(__FILE__), $theme, $theme);
-        }
-
-        wp_enqueue_style(
-            $this->plugin_name . '_woo_css',
-            $theme_css_path,
-            array(),
-            $this->version,
-            'all'
-        );
+		$this->loadExtraScripts();
     }
 
     public function enqueue_styles()
     {
-        $this->enqueue_styles_based_on_theme(static::THEME_NAME);;
+	    $this->loadExtraStyles();
     }
 
-    public function getProductId()
-    {
-        global $post;
-        return sanitize_meta(DWeb_PS_WOO_METABOX::FIELD_PRODUCT_ID, get_post_meta($post->ID, DWeb_PS_WOO_METABOX::FIELD_PRODUCT_ID, true), 'post');
-    }
+//    public function getProductId()
+//    {
+//        global $post;
+//        return sanitize_meta(DWeb_PS_WOO_METABOX::FIELD_PRODUCT_ID, get_post_meta($post->ID, DWeb_PS_WOO_METABOX::FIELD_PRODUCT_ID, true), 'post');
+//    }
 
     public function enqueue_scripts()
     {
         global $post;
-        $this->enqueue_scripts_based_on_theme(static::THEME_NAME);
+        $this->loadScripts();
+
         $productID = sanitize_meta(DWeb_PS_WOO_METABOX::FIELD_PRODUCT_ID, get_post_meta($post->ID, DWeb_PS_WOO_METABOX::FIELD_PRODUCT_ID, true), 'post');
 
         $assets = [];
@@ -157,8 +122,9 @@ class DWeb_PS_Public_Woo_Base
             'debug' => get_option(DWeb_PS_ADMIN_OPTIONS::CONFIGURATOR_DEBUG, false),
             'threeSixtyConfig' => $threeSixtyConfig,
 	        'translations' => array(
-		        'startConfiguration' => __('Start configuration', '3dweb-print-studio'),
-		        'loading' => __('Loading 3...', '3dweb-print-studio'),
+		        'startConfiguration' => get_option(DWeb_PS_ADMIN_OPTIONS::CONFIGURATOR_START_BUTTON_TEXT, __('Start configuration', '3dweb-print-studio')),
+		        'loading' => __('Loading ...', '3dweb-print-studio'),
+		        'sessionClosed' => get_option(DWeb_PS_ADMIN_OPTIONS::CONFIGURATOR_SESSION_CLOSED_TEXT, 'Design: {reference}'),
 	        )
         ));
     }
@@ -273,7 +239,7 @@ class DWeb_PS_Public_Woo_Base
     }
 
 
-    private function loadSessionUrls()
+    private  function loadSessionUrls()
     {
         if (isset($_GET[self::TEAM_SESSION_REFERENCE]) && !$this->sessionImagesLoaded) {
             $teamReference = sanitize_text_field($_GET[self::TEAM_SESSION_REFERENCE]);

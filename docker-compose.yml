@@ -36,6 +36,11 @@ services:
       MYSQL_DATABASE: 'wp'
       MYSQL_USER: 'wp'
       MYSQL_PASSWORD: 'wp'
+    volumes:
+      - mysql_data_wp:/var/lib/mysql
 networks:
   wpconfigurator:
     external: false
+
+volumes:
+  mysql_data_wp:

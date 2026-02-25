@@ -1,6 +1,9 @@
 jQuery(function ($) {
     window.DWEB_PS_ADMIN = [];
     window.DWEB_PS_ADMIN.sync = function (endPoint, values, method) {
+        if (typeof jsvUpload === 'undefined') {
+            return Promise.reject('DWEB_PS_ADMIN: jsvUpload is not defined');
+        }
         method = method || 'post';
         const defaultValues = {
             _ajax_nonce: jsvUpload['security'],

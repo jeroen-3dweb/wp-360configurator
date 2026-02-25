@@ -1,6 +1,6 @@
 <?php
 
-class DWeb_PS_Public_Woo_Factory
+class DWeb_PS_Public_Theme_Factory
 {
     /**
      * The ID of this plugin.
@@ -31,12 +31,14 @@ class DWeb_PS_Public_Woo_Factory
     {
         $this->plugin_name = $plugin_name;
         $this->version = $version;
+
+	    $this->loadBaseWooFile();
     }
 
-	private function loadTheme($theme)
+	private function loadWooTheme($theme)
 	{
 		$theme = strtolower($theme);
-		$theme_class_file = dirname(__FILE__) . '/themes/' . strtolower($theme) . '/class-3dweb-ps-public-woo-' . strtolower($theme) . '.php';
+		$theme_class_file = dirname(__FILE__) . '/' . $theme . '/woo/class-3dweb-ps-public-woo-' . $theme . '.php';
 
 		if (file_exists($theme_class_file)) {
 			require_once $theme_class_file;
@@ -45,19 +47,24 @@ class DWeb_PS_Public_Woo_Factory
 		return false;
 	}
 
-    public function create($theme)
+    public function createWooThemeClass($theme)
     {
-        require_once dirname(__FILE__) . '/themes/class-3dweb-ps-public-woo-base.php';
 
-
-		if($this->loadTheme($theme)){
+		if($this->loadWooTheme($theme)){
 			$class_name = 'DWeb_PS_Public_Woo_' . ucfirst(strtolower($theme));
 			if (class_exists($class_name)) {
 				return new $class_name($this->plugin_name, $this->version);
 			}
 		}
 
-	    $this->loadTheme('default');
+	    $this->loadWooTheme('default');
 	    return new DWeb_PS_Public_Woo_Default($this->plugin_name, $this->version);
     }
+
+	/**
+	 * @return void
+	 */
+	public function loadBaseWooFile() {
+		require_once dirname( __FILE__ ) . '/class-3dweb-ps-public-woo-base.php';
+	}
 }

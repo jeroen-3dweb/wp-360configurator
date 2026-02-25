@@ -2,28 +2,51 @@
     'use strict';
 
     // Helper function to poll an asset until it returns a 200 response
-    async function waitForAsset(url, maxRetries = 60, interval = 1000) {
-        let attempts = 0;
-        while (attempts < maxRetries) {
+    async function waitForAsset(
+        url,
+        { maxRetries = 60, interval = 1000, timeout = 8000 } = {}
+    ) {
+        const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            const urlObj = new URL(url, location.href);
+            urlObj.searchParams.set("_cb", String(Date.now()));
+
             try {
-                const urlObj = new URL(url);
-                urlObj.searchParams.set('cb', Date.now());
-                const response = await fetch(urlObj.toString(), {method: 'GET'});
-                console.log(`Polling URL: ${urlObj.toString()} - Status: ${response.status}`);
-                if (response.status === 200) {
-                    return true;
-                }
-            } catch (error) {
-                console.error(`Error fetching ${url}:`, error);
+                await new Promise((resolve, reject) => {
+                    const img = new Image();
+                    const t = setTimeout(() => {
+                        img.src = ""; // stop loading
+                        reject(new Error("Image load timeout"));
+                    }, timeout);
+
+                    img.onload = () => {
+                        clearTimeout(t);
+                        // extra check: echt pixels?
+                        if (img.naturalWidth > 0) resolve(true);
+                        else reject(new Error("Image loaded but naturalWidth=0"));
+                    };
+                    img.onerror = () => {
+                        clearTimeout(t);
+                        reject(new Error("Image error"));
+                    };
+
+                    img.src = urlObj.toString();
+                });
+
+                return true;
+            } catch (err) {
+                console.warn(`[waitForImage] attempt ${attempt}/${maxRetries} failed:`, err?.message || err);
+                await sleep(interval);
             }
-            attempts++;
-            await new Promise(resolve => setTimeout(resolve, interval));
         }
-        throw new Error(`Asset did not load after ${maxRetries} attempts: ${url}`);
+
+        throw new Error(`Image did not load after ${maxRetries} attempts: ${url}`);
     }
 
     window.cnf3DWebCore = {
         isListening: false,
+        logPrefix: '[3DWeb]',
 
         init: function (config, themeHooks) {
             this.config = config;
@@ -31,37 +54,22 @@
             this.logDebug('Core initialized', config);
 
             if (config.team_reference) {
-                this.handleExistingSession();
+                this.handleBackFromSession();
             } else {
                 this.handleNewSession();
             }
         },
 
-        logDebug: function (message, ...argss) {
-            if(this.config.debug) {
-                message = `[3DWeb] ${message}`;
-                console.log(message, argss, this.config)
-            }
+        checkIfReady: function (url, maxRetries = 60, interval = 1000) {
+            return waitForAsset(url, maxRetries, interval);
         },
 
-        handleExistingSession: async function () {
-            if (this.themeHooks.onSessionStarted) {
-                this.themeHooks.onSessionStarted(this.config.team_reference);
-            }
-
-            if (this.config.useThreeSixtyView && this.config.assets !== null) {
-                try {
-                    const mainImageUrl = this.addHeightToUrl(this.config.assets.main_0.url, 600);
-                    await waitForAsset(mainImageUrl);
-
-                    if (this.themeHooks.replaceImageWith360) {
-                        this.themeHooks.replaceImageWith360(mainImageUrl, (containerId, imageId) => {
-                            this.loadThreeSixtyView(containerId, imageId);
-                        });
-                    }
-                } catch (error) {
-                    console.error('3DWeb: Error loading assets:', error);
-                }
+        handleBackFromSession: async function () {
+            this.logDebug('Existing session detected');
+            if (this.themeHooks.onBackFromSession) {
+                this.themeHooks.onBackFromSession(this.config);
+            } else {
+                this.logDebug('No onBackFromSession hook provided');
             }
         },
 
@@ -75,19 +83,7 @@
 
         handleNewSession: function () {
             if (this.themeHooks.initStartButton) {
-                const selector = this.themeHooks.initStartButton();
-                if (selector) {
-                    this.config.selector = selector;
-                    this.logDebug('Button selector found:');
-                    this.changeTextOnButton(selector, this.config.translations.startConfiguration);
-
-                    $(document).on('click', selector, (e) => {
-                        e.preventDefault();
-                        this.logDebug('Button clicked');
-                        this.changeTextOnButton(selector, this.config.translations.loading);
-                        this.startNewSession(selector);
-                    });
-                }
+               this.themeHooks.initStartButton();
             }
         },
 
@@ -121,21 +117,21 @@
                                 this.themeHooks.onSessionLoading(false, this.config);
                             }
                             setTimeout(() => {
-                                window.open(data.url);
+                                location.assign(data.url);
                             }, 0);
                         } else {
-                            const errorMsg = response.message ? response.message : (data && data.message ? data.message : 'Er is een fout opgetreden bij het laden van de configurator.');
+                            const errorMsg = response.message ? response.message : (data && data.message ? data.message : 'An error occurred while loading the API.');
                             this.handleError(errorMsg);
                         }
                     } catch (e) {
-                        this.handleError('Fout bij verwerken van server respons.');
+                        this.handleError('Error processing server response.');
                     } finally {
                         this.isListening = false;
                     }
                 },
                 error: (xhr, status, error) => {
                     this.logDebug('AJAX Error:', status, error, xhr.responseText);
-                    let errorMessage = 'Er is een kritieke fout opgetreden.';
+                    let errorMessage = 'A critical error occurred.';
                     try {
                         const response = JSON.parse(xhr.responseText);
                         if (response && response.data && response.data.message) {
@@ -143,7 +139,7 @@
                         }
                     } catch (e) {
                         if (error) {
-                            errorMessage = `Server fout: ${error}`;
+                            errorMessage = `Server error: ${error}`;
                         }
                     }
                     this.handleError(errorMessage);
@@ -152,8 +148,18 @@
             });
         },
 
+        logDebug: function (message, ...args) {
+            if(this.config.debug) {
+                message = `${this.logPrefix}  ${message}`;
+                const severity = (args.length > 0 && typeof args[args.length - 1] === 'string' && ['log','warn','error','info'].includes(args[args.length - 1]))
+                    ? args.pop()
+                    : 'log';
+                console[severity](message, ...args, this.config)
+            }
+        },
+
         handleError: function (message) {
-            this.logDebug('Error:', message);
+            this.logDebug('Error:', message, 'error');
             if (this.themeHooks.showError) {
                 this.themeHooks.showError(message);
             }
@@ -173,6 +179,14 @@
                 console.error('JavascriptViewer not loaded');
                 return;
             }
+
+            if(!this.config.threeSixtyConfig){
+                this.handleError('360 config not loaded');
+                return;
+            }
+
+
+            // test every url
 
             const viewer = new JavascriptViewer({
                 mainHolderId: containerId,
@@ -194,7 +208,7 @@
             });
 
             viewer.start().catch((error) => {
-                console.error('Error initializing 360 view:', error);
+                this.handleError(error);
             });
         }
     };

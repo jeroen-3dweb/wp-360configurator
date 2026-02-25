@@ -38,6 +38,22 @@ include('3dweb-ps-settings-helper.php');
                     get_option(DWeb_PS_ADMIN_OPTIONS::CONFIGURATOR_DEBUG, false),
                     'checkbox'
                 );
+
+                echo dwebps_setting_create_row(
+                    'Start button text',
+                    'Text on the button when the product is configurable',
+                    DWeb_PS_ADMIN_OPTIONS::CONFIGURATOR_START_BUTTON_TEXT,
+                    get_option(DWeb_PS_ADMIN_OPTIONS::CONFIGURATOR_START_BUTTON_TEXT, 'Start configuration'),
+                    'text'
+                );
+
+                echo dwebps_setting_create_row(
+                    'Session closed text',
+                    'Text shown below the button after the session is closed',
+                    DWeb_PS_ADMIN_OPTIONS::CONFIGURATOR_SESSION_CLOSED_TEXT,
+                    get_option(DWeb_PS_ADMIN_OPTIONS::CONFIGURATOR_SESSION_CLOSED_TEXT, 'Design: {reference}'),
+                    'text'
+                );
                 ?>
             </div>
         </form>

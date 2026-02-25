@@ -31,7 +31,15 @@ class DWeb_PS_Public
     {
         $this->plugin_name = $plugin_name;
         $this->version     = $version;
+
+		$this->loadThemeFactory();
     }
+
+	private function loadThemeFactory()
+	{
+		require_once plugin_dir_path(dirname(__FILE__)) . '/public/themes/class-3dweb-ps-public-theme-factory.php';
+	}
+
 
     /**
      * Register the stylesheets for the public-facing side of the site.
