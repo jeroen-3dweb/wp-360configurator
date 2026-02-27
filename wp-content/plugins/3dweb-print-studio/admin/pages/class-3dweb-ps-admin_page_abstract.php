@@ -11,6 +11,11 @@ abstract class DWeb_PS_ADMIN_PAGE_ABSTRACT
     protected $isMainMenu = false;
     protected $customAjaxHooks = [];
 
+    protected function normalizeFieldValue($key, $value)
+    {
+        return $value;
+    }
+
     public function loadMenuItem($mainSlug)
     {
         if($this->isMainMenu){
@@ -70,6 +75,7 @@ abstract class DWeb_PS_ADMIN_PAGE_ABSTRACT
             $response[$key] = ['value' => '', 'error' => ''];
             if (in_array($key, $this->fields)) {
                 $value = sanitize_text_field($_POST[$key]);
+                $value = $this->normalizeFieldValue($key, $value);
                 $oldValue = get_option($key, '');
                 if (update_option($key, $value) || $value === $oldValue) {
                     $nUpdated++;
@@ -91,10 +97,8 @@ abstract class DWeb_PS_ADMIN_PAGE_ABSTRACT
     public function loadHooks()
     {
         add_action('wp_ajax_' . $this::PATH, array($this, 'saveSettings'));
-        add_action('wp_ajax_nopriv_' . $this::PATH, array($this, 'saveSettings'));
         foreach ($this->customAjaxHooks as $methodName => $customAjaxHook) {
             add_action('wp_ajax_' . $methodName, array($this, $customAjaxHook));
-            add_action('wp_ajax_nopriv_' . $methodName, array($this, $customAjaxHook));
         }
     }
 }

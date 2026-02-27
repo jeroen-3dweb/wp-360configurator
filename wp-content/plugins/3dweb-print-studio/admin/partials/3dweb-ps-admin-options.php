@@ -11,8 +11,7 @@ include('3dweb-ps-settings-helper.php');
 ?>
     <div class="dweb_ps__settings">
         <h2>Options</h2>
-        <p>Options how to handle the 3D configurator.
-        </p>
+        <p>Configure how the 3D configurator behaves on product and cart pages.</p>
 
         <form method='post' data-source="<?php echo esc_attr(DWeb_PS_ADMIN_OPTIONS::PATH); ?>">
 

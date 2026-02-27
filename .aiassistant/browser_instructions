@@ -1,0 +1,14 @@
+# Instruction: Configure product and return to shop
+
+1. Open `http://localhost:8000`.
+2. Go to `Shop`.
+3. Click the first product (`cup`).
+4. Click `Start configuratie`.
+5. In the configurator:
+   - Open `Elementen` and add elements (if clicking issues occur: use `Text` to add at least 1 element).
+6. Click `Terug naar de winkel`.
+7. In the confirmation popup:
+   - Check `Ik accepteer het huidige ontwerp`.
+   - Click `Akkoord breng me terug naar de site`.
+8. You return to the product page with a `teamSessionReference` in the URL.
+9. Click `Add to cart` to put the configured product into the cart.

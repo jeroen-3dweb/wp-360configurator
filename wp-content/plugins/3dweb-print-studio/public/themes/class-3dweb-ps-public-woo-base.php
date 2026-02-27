@@ -34,6 +34,7 @@ class DWeb_PS_Public_Woo_Base
     private $mainImages = [];
 
     private $sessionImagesLoaded = false;
+    private $sessionAssetsCache = [];
 
     public function __construct($plugin_name, $version)
     {
@@ -67,6 +68,14 @@ class DWeb_PS_Public_Woo_Base
         wp_enqueue_script(
             $this->plugin_name . '_public_core',
             plugin_dir_url(dirname(__FILE__)) . 'js/3dweb-ps-public.js',
+            array('jquery'),
+            $this->version,
+            true
+        );
+
+        wp_enqueue_script(
+            $this->plugin_name . '_public_flexslider',
+            plugin_dir_url(dirname(__FILE__)) . 'js/sliders/3dweb-ps-flexslider.js',
             array('jquery'),
             $this->version,
             true
@@ -222,20 +231,329 @@ class DWeb_PS_Public_Woo_Base
     public function handleCreateOrderLineItem($item, $cart_item_key, $values, $order)
     {
         if (isset($values[self::TEAM_SESSION_REFERENCE])) {
-            $item->add_meta_data(self::TEAM_SESSION_REFERENCE, $values[self::TEAM_SESSION_REFERENCE], true);
+            $teamReference = sanitize_text_field($values[self::TEAM_SESSION_REFERENCE]);
+            $item->add_meta_data(self::TEAM_SESSION_REFERENCE, $teamReference, true);
+
+            $designUrl = $this->getSessionDesignUrl($teamReference);
+            if ($designUrl) {
+                $item->add_meta_data('design', $designUrl, true);
+            }
         }
         return $item;
     }
 
     public function handleChangeCartImage($image, $cart_item, $cart_item_key)
     {
-//
-//                $this->pretty_var_dump($image);
-//                $this->pretty_var_dump($cart_item);
-        if (isset($cart_item[self::TEAM_SESSION_REFERENCE]) && !empty($cart_item[self::TEAM_SESSION_REFERENCE])) {
-
+        $customImageUrl = $this->getCartItemCustomImageUrl($cart_item);
+        if (!$customImageUrl) {
+            return $image;
         }
-        return $image;
+
+        $altText = '';
+        if (isset($cart_item['data']) && $cart_item['data'] instanceof WC_Product) {
+            $altText = $cart_item['data']->get_name();
+        }
+
+        return sprintf(
+            '<img src="%s" alt="%s" class="attachment-woocommerce_thumbnail size-woocommerce_thumbnail" loading="lazy" decoding="async" />',
+            esc_url($customImageUrl),
+            esc_attr($altText)
+        );
+    }
+
+    public function handleStoreApiCartItemImages($product_images, $cart_item, $cart_item_key)
+    {
+        $customImageUrl = $this->getCartItemCustomImageUrl($cart_item);
+        if (!$customImageUrl) {
+            return $product_images;
+        }
+
+        $baseImage = null;
+        if (is_array($product_images) && !empty($product_images) && is_object($product_images[0])) {
+            $baseImage = $product_images[0];
+        }
+
+        $image = (object) [
+            'id'        => isset($baseImage->id) ? (int) $baseImage->id : (int) ($cart_item['product_id'] ?? 0),
+            'src'       => $customImageUrl,
+            'thumbnail' => $customImageUrl,
+            'srcset'    => isset($baseImage->srcset) ? (string) $baseImage->srcset : '',
+            'sizes'     => isset($baseImage->sizes) ? (string) $baseImage->sizes : '',
+            'name'      => isset($baseImage->name) ? (string) $baseImage->name : '',
+            'alt'       => isset($baseImage->alt) ? (string) $baseImage->alt : '',
+        ];
+
+        return [$image];
+    }
+
+    public function handleAdminOrderItemThumbnail($thumbnail, $item_id, $item)
+    {
+        if (!$item || !is_a($item, 'WC_Order_Item_Product')) {
+            return $thumbnail;
+        }
+
+        $teamReference = $item->get_meta(self::TEAM_SESSION_REFERENCE, true);
+        if (!$teamReference) {
+            return $thumbnail;
+        }
+
+        $customImageUrl = $this->getSessionMainImageUrl($teamReference);
+        if (!$customImageUrl) {
+            return $thumbnail;
+        }
+
+        $altText = $item->get_name();
+
+        return sprintf(
+            '<img src="%s" class="attachment-thumbnail size-thumbnail" alt="%s" title="" loading="lazy" style="width:100%%;height:100%%;max-width:none;max-height:none;object-fit:contain;display:block;margin:0;padding:0;" />',
+            esc_url($customImageUrl),
+            esc_attr($altText)
+        );
+    }
+
+    public function handleOrderItemDisplayMetaValue($displayValue, $meta, $item)
+    {
+        if (!is_admin() || !is_object($meta) || !isset($meta->key) || $meta->key !== 'design') {
+            return $displayValue;
+        }
+
+        if (!$item || !is_a($item, 'WC_Order_Item_Product')) {
+            return $displayValue;
+        }
+
+        if (!is_string($displayValue) || !filter_var($displayValue, FILTER_VALIDATE_URL)) {
+            return $displayValue;
+        }
+
+        return $this->buildDesignActionsHtml($displayValue);
+    }
+
+    public function handleOrderItemFormattedMetaData($formattedMeta, $item)
+    {
+        if (!is_admin() || !$item || !is_a($item, 'WC_Order_Item_Product')) {
+            return $formattedMeta;
+        }
+
+        $teamReference = $item->get_meta(self::TEAM_SESSION_REFERENCE, true);
+        if (!$teamReference) {
+            return $formattedMeta;
+        }
+
+        foreach ($formattedMeta as $meta) {
+            if (isset($meta->key) && $meta->key === 'design') {
+                return $formattedMeta;
+            }
+        }
+
+        $designUrl = $item->get_meta('design', true);
+        if (!$designUrl) {
+            $designUrl = $this->getSessionDesignUrl($teamReference);
+        }
+
+        if (!$designUrl) {
+            return $formattedMeta;
+        }
+
+        $displayValue = $this->buildDesignActionsHtml($designUrl);
+
+        $formattedMeta['cnf_design'] = (object) [
+            'key'           => 'design',
+            'value'         => $designUrl,
+            'display_key'   => 'design',
+            'display_value' => $displayValue,
+        ];
+
+        return $formattedMeta;
+    }
+
+    public function handleAdminDesignDownload()
+    {
+        if (!current_user_can('edit_shop_orders')) {
+            wp_die('Forbidden', 403);
+        }
+
+        $nonce = isset($_GET['_wpnonce']) ? sanitize_text_field(wp_unslash($_GET['_wpnonce'])) : '';
+        if (!wp_verify_nonce($nonce, '3dweb_ps_download_design')) {
+            wp_die('Invalid nonce', 403);
+        }
+
+        $rawUrl = isset($_GET['url']) ? wp_unslash($_GET['url']) : '';
+        $designUrl = esc_url_raw($rawUrl);
+
+        if (
+            !$designUrl ||
+            !wp_http_validate_url($designUrl) ||
+            !$this->isAllowedDesignDownloadUrl($designUrl)
+        ) {
+            wp_die('Invalid design URL', 400);
+        }
+
+        $response = wp_safe_remote_get($designUrl, [
+            'timeout' => 30,
+            'redirection' => 5,
+        ]);
+
+        if (is_wp_error($response)) {
+            wp_die('Download failed', 502);
+        }
+
+        $statusCode = wp_remote_retrieve_response_code($response);
+        if ($statusCode < 200 || $statusCode >= 300) {
+            wp_die('Design unavailable', 502);
+        }
+
+        $body = wp_remote_retrieve_body($response);
+        if ($body === '') {
+            wp_die('Empty design file', 502);
+        }
+
+        $path = parse_url($designUrl, PHP_URL_PATH);
+        $filename = $path ? wp_basename($path) : 'design.png';
+        if (!$filename || strpos($filename, '.') === false) {
+            $filename = 'design.png';
+        }
+        $filename = sanitize_file_name($filename);
+
+        $contentType = wp_remote_retrieve_header($response, 'content-type');
+        if (!$contentType) {
+            $contentType = 'application/octet-stream';
+        }
+
+        nocache_headers();
+        header('Content-Description: File Transfer');
+        header('Content-Type: ' . $contentType);
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Length: ' . strlen($body));
+        echo $body;
+        exit;
+    }
+
+    private function isAllowedDesignDownloadUrl($url)
+    {
+        $host = wp_parse_url($url, PHP_URL_HOST);
+        if (!$host) {
+            return false;
+        }
+        $host = strtolower($host);
+
+        $allowedHosts = [];
+
+        $configuratorHost = (new DWeb_PS_API())->getConfiguratorHost();
+        $configuratorParsedHost = wp_parse_url($configuratorHost, PHP_URL_HOST);
+        if ($configuratorParsedHost) {
+            $allowedHosts[] = strtolower($configuratorParsedHost);
+        }
+
+        $allowedSuffixes = [
+            '.3dweb.io',
+            '.b-cdn.net',
+            '.gumlet.io',
+        ];
+
+        if (in_array($host, $allowedHosts, true)) {
+            return true;
+        }
+
+        foreach ($allowedSuffixes as $suffix) {
+            if (substr($host, -strlen($suffix)) === $suffix) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function getCartItemCustomImageUrl($cart_item)
+    {
+        if (!is_array($cart_item) || empty($cart_item[self::TEAM_SESSION_REFERENCE])) {
+            return null;
+        }
+
+        $teamReference = sanitize_text_field($cart_item[self::TEAM_SESSION_REFERENCE]);
+        if (!$teamReference) {
+            return null;
+        }
+
+        return $this->getSessionMainImageUrl($teamReference);
+    }
+
+    private function getSessionAssetsByReference($teamReference)
+    {
+        if (!$teamReference) {
+            return null;
+        }
+
+        if (isset($this->sessionAssetsCache[$teamReference])) {
+            return $this->sessionAssetsCache[$teamReference];
+        }
+
+        $response = (new DWeb_PS_API())->getSessionAssets($teamReference);
+        if (!$response || isset($response['error']) || isset($response['errors']) || !isset($response['data']) || !is_array($response['data'])) {
+            $this->sessionAssetsCache[$teamReference] = null;
+            return null;
+        }
+
+        $this->sessionAssetsCache[$teamReference] = $response['data'];
+        return $this->sessionAssetsCache[$teamReference];
+    }
+
+    private function getSessionMainImageUrl($teamReference)
+    {
+        $assets = $this->getSessionAssetsByReference($teamReference);
+        if (!$assets || !isset($assets['main_0'])) {
+            return null;
+        }
+
+        $mainImage = $assets['main_0'];
+
+        if (is_array($mainImage) && !empty($mainImage['url'])) {
+            return esc_url_raw($mainImage['url']);
+        }
+
+        if (is_string($mainImage) && filter_var($mainImage, FILTER_VALIDATE_URL)) {
+            return esc_url_raw($mainImage);
+        }
+
+        return null;
+    }
+
+    private function getSessionDesignUrl($teamReference)
+    {
+        $assets = $this->getSessionAssetsByReference($teamReference);
+        if (!$assets || !isset($assets['design']) || !is_array($assets['design']) || empty($assets['design'])) {
+            return null;
+        }
+
+        $firstDesign = reset($assets['design']);
+
+        if (is_string($firstDesign) && filter_var($firstDesign, FILTER_VALIDATE_URL)) {
+            return esc_url_raw($firstDesign);
+        }
+
+        if (is_array($firstDesign) && !empty($firstDesign['url']) && filter_var($firstDesign['url'], FILTER_VALIDATE_URL)) {
+            return esc_url_raw($firstDesign['url']);
+        }
+
+        return null;
+    }
+
+    private function buildDesignActionsHtml($url)
+    {
+        $safeUrl = esc_url($url);
+        $downloadUrl = add_query_arg(
+            [
+                'action' => '3dweb_ps_download_design',
+                'url' => $url,
+                '_wpnonce' => wp_create_nonce('3dweb_ps_download_design'),
+            ],
+            admin_url('admin-ajax.php')
+        );
+
+        return sprintf(
+            '<a href="%1$s" target="_blank" rel="noopener noreferrer">Open design <span class="dashicons dashicons-external" style="font-size:11px;width:11px;height:11px;line-height:11px;vertical-align:middle;margin-left:2px;"></span></a> / <a href="%2$s">Download</a>',
+            $safeUrl,
+            esc_url($downloadUrl)
+        );
     }
 
 

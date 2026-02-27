@@ -1,5 +1,7 @@
 *
 !.gitignore
+!.aiassistant/
+!.aiassistant/**
 !docker/
 !docker-compose.yml
 !example.env

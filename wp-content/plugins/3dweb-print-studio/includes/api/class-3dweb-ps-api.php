@@ -2,6 +2,8 @@
 
 class DWeb_PS_API
 {
+    const DEFAULT_CONFIGURATOR_HOST = 'https://api.3dweb.io';
+    const DEFAULT_API_VERSION = 'v1';
     /**
      * @var string
      */
@@ -11,6 +13,7 @@ class DWeb_PS_API
      * @var string
      */
     private $pluginName;
+    private $runtimeConfig = [];
 
 
     /**
@@ -20,10 +23,24 @@ class DWeb_PS_API
      * @param $pluginName
      * @since 1.0.0
      */
-    public function construct($version, $pluginName)
+    public function __construct($version = null, $pluginName = null)
     {
         $this->version = $version;
         $this->pluginName = $pluginName;
+    }
+
+    public function withRuntimeConfig(array $config)
+    {
+        $this->runtimeConfig = $config;
+        return $this;
+    }
+
+    /**
+     * @deprecated 1.0.0 Use __construct instead.
+     */
+    public function construct($version, $pluginName)
+    {
+        $this->__construct($version, $pluginName);
     }
 
     public function createNewSession($productId, $callbackUrl)
@@ -51,7 +68,7 @@ class DWeb_PS_API
 
     public function performGet($endPoint)
     {
-        $version = get_option(DWeb_PS_ADMIN_API::CONFIGURATOR_HOST_VERSION);
+        $version = $this->getApiVersion();
         $configuratorHost = $this->getConfiguratorHost();
         $url = sprintf('%s/%s/%s', $configuratorHost, $version, $endPoint);
 
@@ -83,7 +100,7 @@ class DWeb_PS_API
 
     public function performPost($endPoint, $data)
     {
-        $version = get_option(DWeb_PS_ADMIN_API::CONFIGURATOR_HOST_VERSION);
+        $version = $this->getApiVersion();
         $configuratorHost = $this->getConfiguratorHost();
         $url = sprintf('%s/%s/%s', $configuratorHost, $version, $endPoint);
 
@@ -116,7 +133,9 @@ class DWeb_PS_API
 
     public function getArgs($data = null): array
     {
-        $token = get_option(DWeb_PS_ADMIN_API::TOKEN);
+        $token = isset($this->runtimeConfig['token'])
+            ? $this->runtimeConfig['token']
+            : get_option(DWeb_PS_ADMIN_API::TOKEN);
         $args = array(
             'headers' => array(
                 'Authorization' => 'Bearer ' . $token,
@@ -133,7 +152,23 @@ class DWeb_PS_API
 
     public function getConfiguratorHost(): string
     {
-        $configuratorHost = get_option(DWeb_PS_ADMIN_API::CONFIGURATOR_HOST);
+        $configuratorHost = isset($this->runtimeConfig['host'])
+            ? $this->runtimeConfig['host']
+            : get_option(DWeb_PS_ADMIN_API::CONFIGURATOR_HOST, self::DEFAULT_CONFIGURATOR_HOST);
+        if (empty($configuratorHost)) {
+            $configuratorHost = self::DEFAULT_CONFIGURATOR_HOST;
+        }
         return rtrim($configuratorHost, '/');
+    }
+
+    private function getApiVersion(): string
+    {
+        $version = isset($this->runtimeConfig['version'])
+            ? $this->runtimeConfig['version']
+            : get_option(DWeb_PS_ADMIN_API::CONFIGURATOR_HOST_VERSION, self::DEFAULT_API_VERSION);
+        if (empty($version)) {
+            $version = self::DEFAULT_API_VERSION;
+        }
+        return $version;
     }
 }

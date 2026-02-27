@@ -72,6 +72,11 @@ class DWeb_PS_WOO
         $pluginPublicWoo = (new DWeb_PS_Public_Theme_Factory($this->pluginName, $this->version))->createWooThemeClass($currentTheme->get('Name'));
 
         $this->loader->add_filter('woocommerce_cart_item_thumbnail', $pluginPublicWoo, 'handleChangeCartImage', 1, 3);
+        $this->loader->add_filter('woocommerce_store_api_cart_item_images', $pluginPublicWoo, 'handleStoreApiCartItemImages', 10, 3);
+        $this->loader->add_filter('woocommerce_admin_order_item_thumbnail', $pluginPublicWoo, 'handleAdminOrderItemThumbnail', 10, 3);
+        $this->loader->add_filter('woocommerce_order_item_display_meta_value', $pluginPublicWoo, 'handleOrderItemDisplayMetaValue', 10, 3);
+        $this->loader->add_filter('woocommerce_order_item_get_formatted_meta_data', $pluginPublicWoo, 'handleOrderItemFormattedMetaData', 10, 2);
+        $this->loader->add_action('wp_ajax_3dweb_ps_download_design', $pluginPublicWoo, 'handleAdminDesignDownload', 10, 0);
         $this->loader->add_filter('woocommerce_before_add_to_cart_button', $pluginPublicWoo, 'handleAddCustomHiddenField',10,0);
         $this->loader->add_filter('woocommerce_add_cart_item_data', $pluginPublicWoo, 'handleAddToCartItem',10,2);
         $this->loader->add_filter('woocommerce_checkout_create_order_line_item', $pluginPublicWoo, 'handleCreateOrderLineItem', 10, 4);

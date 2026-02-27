@@ -25,6 +25,18 @@ class DWeb_PS_ADMIN_API extends DWeb_PS_ADMIN_PAGE_ABSTRACT
         self::CONFIGURATOR_HOST_VERSION
     ];
 
+    protected function normalizeFieldValue($key, $value)
+    {
+        if ($key === self::CONFIGURATOR_HOST && $value === '') {
+            return DWeb_PS_API::DEFAULT_CONFIGURATOR_HOST;
+        }
+        if ($key === self::CONFIGURATOR_HOST_VERSION && $value === '') {
+            return DWeb_PS_API::DEFAULT_API_VERSION;
+        }
+
+        return $value;
+    }
+
     /**
      * AJAX handler to test credentials against /check-auth endpoint
      */
@@ -36,21 +48,36 @@ class DWeb_PS_ADMIN_API extends DWeb_PS_ADMIN_PAGE_ABSTRACT
             wp_send_json_error(['message' => 'You do not have permission to perform this action.']);
         }
 
-        // Ensure required options are set
-        $token = get_option(self::TOKEN, '');
-        $host  = get_option(self::CONFIGURATOR_HOST, '');
-        $ver   = get_option(self::CONFIGURATOR_HOST_VERSION, '');
+        // Use current form values first (even when not saved), fallback to options.
+        $token = isset($_REQUEST[self::TOKEN])
+            ? sanitize_text_field(wp_unslash($_REQUEST[self::TOKEN]))
+            : get_option(self::TOKEN, '');
+        $host = isset($_REQUEST[self::CONFIGURATOR_HOST])
+            ? sanitize_text_field(wp_unslash($_REQUEST[self::CONFIGURATOR_HOST]))
+            : get_option(self::CONFIGURATOR_HOST, DWeb_PS_API::DEFAULT_CONFIGURATOR_HOST);
+        $ver = isset($_REQUEST[self::CONFIGURATOR_HOST_VERSION])
+            ? sanitize_text_field(wp_unslash($_REQUEST[self::CONFIGURATOR_HOST_VERSION]))
+            : get_option(self::CONFIGURATOR_HOST_VERSION, DWeb_PS_API::DEFAULT_API_VERSION);
+
+        if (empty($host)) {
+            $host = DWeb_PS_API::DEFAULT_CONFIGURATOR_HOST;
+        }
+        if (empty($ver)) {
+            $ver = DWeb_PS_API::DEFAULT_API_VERSION;
+        }
         $missing = [];
         if (empty($token)) $missing[] = 'Token';
-        if (empty($host)) $missing[] = 'Configurator Host';
-        if (empty($ver)) $missing[] = 'API Version';
         if (!empty($missing)) {
             wp_send_json_error([
-                'message' => 'Please fill in and save the following fields first: ' . implode(', ', $missing) . '.',
+                'message' => 'Please fill in the following fields first: ' . implode(', ', $missing) . '.',
             ]);
         }
 
-        $api = new DWeb_PS_API();
+        $api = (new DWeb_PS_API())->withRuntimeConfig([
+            'token' => $token,
+            'host' => $host,
+            'version' => $ver,
+        ]);
         $result = $api->performGet('check-auth');
 
         if (is_wp_error($result)) {

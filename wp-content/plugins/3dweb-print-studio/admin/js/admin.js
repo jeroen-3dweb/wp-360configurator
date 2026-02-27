@@ -47,14 +47,13 @@ jQuery(function ($) {
                 $(e.target).html('save');
             }, 2000)
 
-            let errorText = '<ul>';
+            const errors = [];
             $.each(data.data, function (key, val) {
                 if (val.error) {
-                    errorText += `<li>${val.error}</li>`;
+                    errors.push(val.error);
                 }
             });
-            errorText += '</ul>';
-            $(e.target).parent().find('#dweb_ps__save-settings-error').html(errorText);
+            $(e.target).parent().find('#dweb_ps__save-settings-error').text(errors.join(' | '));
         }
 
         const handleSuccess = (data) => {
@@ -83,11 +82,16 @@ jQuery(function ($) {
         e.preventDefault();
         const $btn = $(e.target);
         const $result = $('#dweb_ps__check-auth-result');
-        $btn.html('testing...');
+        const $form = $btn.closest('form');
+        const values = $form.serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        $btn.html('Testing...');
         $result.removeClass('dweb_ps__error').removeClass('dweb_ps__success').html('');
 
         window.DWEB_PS_ADMIN
-            .sync('dweb_ps-check-auth', {}, 'get')
+            .sync('dweb_ps-check-auth', values, 'get')
             .then((res) => {
                 console.log(res);
                 $btn.html('Test credentials');
@@ -95,14 +99,14 @@ jQuery(function ($) {
                     ? res.data.team.name
                     : null;
                 const msg = teamName
-                    ? `successfully connected to ${teamName}`
+                    ? `Successfully connected to ${teamName}.`
                     : (res.data && res.data.message ? res.data.message : res.data.message);
-                $result.addClass('dweb_ps__success').html(msg);
+                $result.addClass('dweb_ps__success').text(msg);
             })
             .catch((err) => {
-                $btn.html('Try again');
+                $btn.html('Test credentials');
                 const msg = (err && err.data && err.data.message) ? err.data.message : (err.message || 'Authentication failed.');
-                $result.addClass('dweb_ps__error').html(msg);
+                $result.addClass('dweb_ps__error').text(msg);
                 console.warn(err);
             });
     });

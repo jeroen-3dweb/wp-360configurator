@@ -163,22 +163,28 @@
   font-size: 1em;
   line-height: 1.5em;
   color: #3b3b3b;
+  margin-top: 0;
+  margin-bottom: 18px;
 }
 .dweb_ps__settings p.warning {
   background-color: #eae3c1;
   padding: 0.5em;
   font-size: 0.8em;
 }
+.dweb_ps__settings__intro {
+  max-width: 760px;
+}
 .dweb_ps__button {
   width: 105px;
 }
 .dweb_ps__settings {
-  background-color: #f6f6f6;
-  padding: 30px 10px 10px 10px;
+  background-color: #f7f8fa;
+  padding: 28px 24px 20px 24px;
   min-height: 300px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  border-radius: 10px;
 }
 .dweb_ps__settings a {
   text-decoration: none;
@@ -186,43 +192,151 @@
 }
 .dweb_ps__settings__holder {
   display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #d9dfe7;
 }
 .dweb_ps__settings__upload-thumb {
   width: 80px;
   margin: 0 10px;
 }
 .dweb_ps__settings-holder {
-  padding: 10px;
+  padding: 0;
   display: flex;
   align-items: flex-start;
   flex-direction: column;
   align-content: flex-start;
-  max-width: 400px;
+  max-width: 480px;
+  width: 100%;
 }
 .dweb_ps__settings-holder__description {
-  margin-top: 2px;
-  font-size: 0.8em;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #6b7280;
   display: inline-block;
 }
 .dweb_ps__settings__table {
   display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 15px 30px;
+  grid-template-columns: 1fr;
+  gap: 14px;
 }
 .dweb_ps__settings__row {
-  display: contents;
+  display: grid;
+  grid-template-columns: minmax(230px, 320px) minmax(220px, 1fr);
+  align-items: start;
+  gap: 14px 24px;
+  background: #ffffff;
+  border: 1px solid #d9dfe7;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.dweb_ps__settings__row--actions {
+  align-items: center;
+}
+.dweb_ps__settings__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 .dweb_ps__settings__row > div:first-child > div {
-  white-space: nowrap;
+  white-space: normal;
 }
 .dweb_ps__settings__row:last-of-type > div {
   border-bottom: none;
 }
 .dweb_ps__settings__label {
   font-weight: 600;
+  color: #1f2937;
+}
+.dweb_ps__settings__input[type=text],
+.dweb_ps__settings__input[type=number],
+.dweb_ps__settings__input[type=password] {
+  width: 100%;
+  max-width: 420px;
+  min-height: 38px;
+}
+.dweb_ps__settings__input[type=checkbox] {
+  width: 18px;
+  height: 18px;
+  margin-top: 8px;
+}
+.dweb_ps__settings-holder select,
+.dweb_ps__settings-holder .dweb_ps__settings__input:not([type=checkbox]) {
+  width: 100%;
+  max-width: 420px;
+}
+.dweb_ps__settings-holder select[name=DWEB_PS_configurator_host_version] {
+  width: 160px;
+  max-width: 160px;
+}
+.dweb_ps__button--primary {
+  background-color: #a5c100;
+  color: #fff;
+  font-weight: 600;
+  margin-top: 0;
+}
+.dweb_ps__button--primary:hover {
+  background-color: #93ad00;
+  color: #fff;
+}
+.dweb_ps__settings__actions {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 40px;
+}
+.dweb_ps__auth-result {
+  margin: 0;
+  min-height: 18px;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+}
+#dweb_ps-test-auth {
+  align-self: center;
+}
+@media (max-width: 900px) {
+  .dweb_ps__settings__actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  #dweb_ps-test-auth {
+    align-self: flex-start;
+  }
+}
+.dweb_ps__error {
+  margin: 0;
+  color: #b42318;
+  font-size: 13px;
+}
+.dweb_ps__success {
+  margin: 0;
+  color: #0f7b34;
+  font-size: 13px;
+}
+@media (max-width: 782px) {
+  .dweb_ps__settings {
+    padding: 18px 14px 14px 14px;
+  }
+  .dweb_ps__settings__row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px;
+  }
+  .dweb_ps__settings__holder {
+    align-items: stretch;
+  }
+  .dweb_ps__button--normal {
+    min-width: 100%;
+  }
 }
 
 .dweb_ps .external-link a[href^=http]::after,

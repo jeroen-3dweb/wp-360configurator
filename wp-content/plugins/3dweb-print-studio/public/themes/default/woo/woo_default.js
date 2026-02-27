@@ -10,6 +10,7 @@
         const themeHooks = {
 
             buttonSelector: '.single_add_to_cart_button',
+            gallerySelector: '.woocommerce-product-gallery',
 
             initStartButton: function () {
                 const selector = this.buttonSelector;
@@ -36,113 +37,6 @@
                     }
                 }
             },
-            getGalleryBaselineHeight(galleryEl) {
-            // 1) Als we hem al hebben opgeslagen: gebruik die
-            const existing = galleryEl.dataset.cfgBaselineH;
-            if (existing) return parseFloat(existing);
-
-            // 2) Anders: bepaal baseline uit de eerste "normale" slide (bijv. de originele WP afbeelding)
-            const firstImg = galleryEl.querySelector('.woocommerce-product-gallery__image img');
-            const slide = galleryEl.querySelector('.woocommerce-product-gallery__image');
-            const slideW = slide?.getBoundingClientRect().width || 0;
-
-            // Probeer ratio uit width/height attrs (meestal 600x600 => 1:1)
-            const w = parseFloat(firstImg?.getAttribute('width')) || 0;
-            const h = parseFloat(firstImg?.getAttribute('height')) || 0;
-
-            let baselineH = 0;
-
-            if (slideW && w && h) {
-                baselineH = slideW * (h / w);
-            } else {
-                // fallback: clamp op huidige viewport maar nooit extremer dan bv 900px
-                const vp = galleryEl.querySelector('.flex-viewport');
-                baselineH = Math.min(vp?.getBoundingClientRect().height || 600, 900);
-            }
-
-            // 3) Opslaan zodat latere updates niet “meemeten” met kapotte heights
-            galleryEl.dataset.cfgBaselineH = String(Math.round(baselineH));
-            return baselineH;
-        },
-            async updateWooGalleryImage (index, newUrl, thumbUrl) {
-                const i = index - 1;
-                const gallery = document.querySelector('.woocommerce-product-gallery');
-                if (!gallery) return console.warn('Gallery not found');
-
-                const wrapper = gallery.querySelector('.woocommerce-product-gallery__wrapper');
-                const slides = wrapper?.querySelectorAll('.woocommerce-product-gallery__image');
-                const slide = slides?.[i];
-                if (!slide) return console.warn(`Slide ${index} not found`);
-
-                const img = slide.querySelector('img');
-                const a = slide.querySelector('a');
-                const viewport = gallery.querySelector('.flex-viewport');
-                if (!img) return;
-
-                // thumbUrl: als je geen aparte thumb hebt, gebruik dezelfde
-                const tUrl = thumbUrl || newUrl;
-
-                // ---- baseline hoogte (jouw A-variant) ----
-                const baselineH = parseFloat(gallery.dataset.cfgBaselineH || '0');
-                if (baselineH && viewport) {
-                    viewport.style.height = `${Math.round(baselineH)}px`;
-                    viewport.style.overflow = 'hidden';
-                }
-
-                // ---- main image vervangen ----
-                img.src = newUrl;
-                img.setAttribute('data-src', newUrl);
-                img.setAttribute('data-large_image', newUrl);
-                img.removeAttribute('srcset');
-                img.removeAttribute('sizes');
-                if (a) a.href = newUrl;
-
-                // vaste box + contain
-                if (baselineH) {
-                    img.style.width = '100%';
-                    img.style.height = `${Math.round(baselineH)}px`;
-                    img.style.objectFit = 'contain';
-                    img.style.display = 'block';
-                }
-
-                // ---- BELANGRIJK: slide data-thumb bijwerken ----
-                slide.setAttribute('data-thumb', tUrl);
-                slide.setAttribute('data-thumb-srcset', ''); // of een echte srcset string
-                slide.setAttribute('data-thumb-sizes', '(max-width: 100px) 100vw, 100px');
-
-                // ---- thumbnail in <ol> bijwerken ----
-                const thumbs = gallery.querySelectorAll('.flex-control-thumbs img');
-                const thumbImg = thumbs?.[i];
-                if (thumbImg) {
-                    thumbImg.src = tUrl;
-                    thumbImg.removeAttribute('srcset');
-                    thumbImg.removeAttribute('sizes');
-
-                    // voorkom dat onload de layout “opblaast” met naturalWidth/naturalHeight
-                    thumbImg.removeAttribute('onload');
-
-                    // maak hem echt thumb-sized (alleen dit element)
-                    thumbImg.style.width = '61px';
-                    thumbImg.style.height = '61px';
-                    thumbImg.style.objectFit = 'cover';
-
-                    // reset attrs die door die onload gezet kunnen zijn
-                    thumbImg.removeAttribute('width');
-                    thumbImg.removeAttribute('height');
-                }
-
-                // wacht op load zodat je geen “oude” thumb cached ziet
-                await new Promise((resolve) => {
-                    if (img.complete) return resolve();
-                    img.addEventListener('load', resolve, { once: true });
-                    img.addEventListener('error', resolve, { once: true });
-                });
-
-                // Flexslider/woo herberekenen
-                if (window.jQuery) window.jQuery(window).trigger('resize');
-                core.logDebug(`WooCommerce image ${index} updated`);
-            }
-            ,
 
             onBackFromSession: function (config) {
                 const $button = $(this.buttonSelector);
@@ -151,26 +45,125 @@
                     $button.parent().append(`<div style="padding: 5px; display: inline-flex;"><span>${sessionClosedText}</span></div>`);
                 }
 
-                if (config.assets && config.assets.main_0 && config.assets.main_0.url) {
-                    const mainImageUrl = core.addHeightToUrl(config.assets.main_0.url, 600);
+                const applyMainImage = (assets) => {
+                    const mainImageUrl = core.addHeightToUrl(assets.main_0.url, 600);
+                    const cacheBustedMainImageUrl = mainImageUrl + (mainImageUrl.includes('?') ? '&' : '?') + '_cb=' + Date.now();
                     core.logDebug('Replacing main image with:', mainImageUrl);
 
-                    core.checkIfReady(mainImageUrl)
+                    return core.checkIfReady(mainImageUrl)
                         .then(() => {
                             core.logDebug('Main image ready');
-                            this.replaceMainImage(mainImageUrl);
+                            return this.replaceMainImage(cacheBustedMainImageUrl);
+                        });
+                };
+
+                this.showGalleryLoader();
+
+                if (config.assets && config.assets.main_0 && config.assets.main_0.url) {
+                    applyMainImage(config.assets)
+                        .catch((error) => {
+                            core.handleError(error);
+                        })
+                        .finally(() => {
+                            this.hideGalleryLoader();
+                        });
+                } else {
+                    core.logDebug('No imageUrl found in config. Polling session assets.');
+                    core.waitForSessionAssets()
+                        .then((assets) => {
+                            core.config.assets = assets;
+                            return applyMainImage(assets);
                         })
                         .catch((error) => {
                             core.handleError(error);
+                        })
+                        .finally(() => {
+                            this.hideGalleryLoader();
                         });
-                } else {
-                    core.logDebug('No imageUrl found in config. Skipping');
+                }
+            },
+
+            showGalleryLoader: function () {
+                const gallery = document.querySelector(this.gallerySelector);
+                if (!gallery) {
+                    return;
+                }
+
+                const target = gallery.querySelector('.woocommerce-product-gallery__wrapper') || gallery;
+                const targetStyle = window.getComputedStyle(target);
+                if (targetStyle.position === 'static') {
+                    target.dataset.cnf3dwebLoaderPosition = 'static';
+                    target.style.position = 'relative';
+                }
+
+                target.dataset.cnf3dwebLoaderOpacity = target.style.opacity || '';
+                target.style.opacity = '0.45';
+
+                if (!target.querySelector('.cnf3dweb-gallery-loader')) {
+                    const loader = document.createElement('div');
+                    loader.className = 'cnf3dweb-gallery-loader';
+                    loader.setAttribute('aria-hidden', 'true');
+                    loader.style.position = 'absolute';
+                    loader.style.top = '50%';
+                    loader.style.left = '50%';
+                    loader.style.width = '42px';
+                    loader.style.height = '42px';
+                    loader.style.marginTop = '-21px';
+                    loader.style.marginLeft = '-21px';
+                    loader.style.border = '3px solid rgba(0,0,0,0.2)';
+                    loader.style.borderTopColor = 'rgba(0,0,0,0.75)';
+                    loader.style.borderRadius = '50%';
+                    loader.style.zIndex = '20';
+                    loader.style.pointerEvents = 'none';
+
+                    if (typeof loader.animate === 'function') {
+                        loader.animate(
+                            [
+                                { transform: 'rotate(0deg)' },
+                                { transform: 'rotate(360deg)' }
+                            ],
+                            { duration: 700, iterations: Infinity }
+                        );
+                    }
+
+                    target.appendChild(loader);
+                }
+            },
+
+            hideGalleryLoader: function () {
+                const gallery = document.querySelector(this.gallerySelector);
+                if (!gallery) {
+                    return;
+                }
+
+                const target = gallery.querySelector('.woocommerce-product-gallery__wrapper') || gallery;
+                target.style.opacity = target.dataset.cnf3dwebLoaderOpacity || '';
+                delete target.dataset.cnf3dwebLoaderOpacity;
+
+                if (target.dataset.cnf3dwebLoaderPosition === 'static') {
+                    target.style.position = '';
+                    delete target.dataset.cnf3dwebLoaderPosition;
+                }
+
+                const loader = target.querySelector('.cnf3dweb-gallery-loader');
+                if (loader) {
+                    loader.remove();
                 }
             },
 
             replaceMainImage: function (imageUrl) {
-                this.updateWooGalleryImage(1, imageUrl);
-                jQuery('.woocommerce-product-gallery').wc_product_gallery();
+                if (!window.cnf3DWebFlexslider || !window.cnf3DWebFlexslider.updateWooGalleryImage) {
+                    return Promise.reject(new Error('Flexslider helper not loaded'));
+                }
+
+                return window.cnf3DWebFlexslider.updateWooGalleryImage(
+                    1,
+                    imageUrl,
+                    null,
+                    {
+                        logger: (message) => core.logDebug(message),
+                    }
+                );
             },
         };
 

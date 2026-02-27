@@ -23,7 +23,10 @@ class DWeb_PS_Public_Woo_Default extends DWeb_PS_Public_Woo_Base
 		wp_enqueue_script(
 			$this->plugin_name . '_woo_js',
 			plugin_dir_url(__FILE__) . 'woo_default.js',
-			array($this->plugin_name . '_public_core'),
+			array(
+				$this->plugin_name . '_public_core',
+				$this->plugin_name . '_public_flexslider',
+			),
 			$this->version,
 			true
 		);

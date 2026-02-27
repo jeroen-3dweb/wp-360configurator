@@ -73,6 +73,9 @@ class DWeb_PS_WOO_METABOX
     public function searchProducts()
     {
         check_ajax_referer('jsv_save_setting');
+        if (!current_user_can('edit_products')) {
+            wp_send_json_error(['error' => 'Permission denied'], 403);
+        }
         $search = isset($_GET['search']) ? sanitize_text_field($_GET['search']) : '';
         $api = new DWeb_PS_API();
         $result = $api->searchProducts($search);
@@ -90,7 +93,10 @@ class DWeb_PS_WOO_METABOX
         $productID = get_post_meta($post->ID, self::FIELD_PRODUCT_ID, true);
 
         $token = get_option(DWeb_PS_ADMIN_API::TOKEN, '');
-        $host  = get_option(DWeb_PS_ADMIN_API::CONFIGURATOR_HOST, '');
+        $host  = get_option(DWeb_PS_ADMIN_API::CONFIGURATOR_HOST, DWeb_PS_API::DEFAULT_CONFIGURATOR_HOST);
+        if (empty($host)) {
+            $host = DWeb_PS_API::DEFAULT_CONFIGURATOR_HOST;
+        }
         $hasCredentials = !empty($token) && !empty($host);
         ?>
         <table class="form-table">

@@ -44,6 +44,42 @@
         throw new Error(`Image did not load after ${maxRetries} attempts: ${url}`);
     }
 
+    function normalizeAssets(assets) {
+        if (assets && !Array.isArray(assets)) {
+            return assets;
+        }
+
+        if (Array.isArray(assets) && assets.length >= 4) {
+            return {
+                main_0: assets[0],
+                main_90: assets[1],
+                main_180: assets[2],
+                main_270: assets[3]
+            };
+        }
+
+        return {};
+    }
+
+    async function pollSessionAssets(fetcher, { maxRetries = 30, interval = 2000 } = {}) {
+        const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                const assets = normalizeAssets(await fetcher());
+                if (assets.main_0 && assets.main_0.url) {
+                    return assets;
+                }
+            } catch (err) {
+                console.warn(`[pollSessionAssets] attempt ${attempt}/${maxRetries} failed:`, err?.message || err);
+            }
+
+            await sleep(interval);
+        }
+
+        throw new Error('Session assets are not ready yet');
+    }
+
     window.cnf3DWebCore = {
         isListening: false,
         logPrefix: '[3DWeb]',
@@ -61,7 +97,36 @@
         },
 
         checkIfReady: function (url, maxRetries = 60, interval = 1000) {
-            return waitForAsset(url, maxRetries, interval);
+            return waitForAsset(url, { maxRetries, interval });
+        },
+
+        getSessionAssets: function () {
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    url: this.config.ajax_url,
+                    type: 'POST',
+                    data: {
+                        method: 'get_assets',
+                        action: this.config.action,
+                        security: this.config.security
+                    },
+                    success: (response) => {
+                        if (response?.success && response?.data) {
+                            resolve(normalizeAssets(response.data));
+                            return;
+                        }
+
+                        reject(new Error(response?.data?.message || response?.message || 'Could not fetch session assets'));
+                    },
+                    error: (xhr, status, error) => {
+                        reject(new Error(error || status || 'Could not fetch session assets'));
+                    }
+                });
+            });
+        },
+
+        waitForSessionAssets: function (options = {}) {
+            return pollSessionAssets(() => this.getSessionAssets(), options);
         },
 
         handleBackFromSession: async function () {

@@ -12,14 +12,13 @@ services:
       - XDEBUG_MODE=${XDEBUG_MODE:-off}
       - WP_ENV=${WP_ENV:-development}
       - WP_DEBUG=${WP_DEBUG:-true}
-      - WP_DEBUG_LOG=${WP_DEBUG_LOG:-true}
+      - WP_DEBUG_LOG=${WP_DEBUG_LOG:-false}
       - WP_DEBUG_DISPLAY=${WP_DEBUG_DISPLAY:-true}
-      - WP_DB_PORT ${WP_DB_PORT:-3309}
+      - WP_DB_PORT=${WP_DB_PORT:-3309}
     env_file:
       - .env
     volumes:
-      - ./wp-content/plugins:/var/www/html/wp-content/plugins:delegated
-      - ./wp-content/themes:/var/www/html/wp-content/themes:delegated
+      - ./wp-content/plugins/3dweb-print-studio:/var/www/html/wp-content/plugins/3dweb-print-studio:delegated
     networks:
       - wpconfigurator
     depends_on:
@@ -27,6 +26,10 @@ services:
   mysql-configurator:
     container_name: wp-360configurator-mysql
     image: mysql:5.7
+    command:
+      - --innodb-flush-log-at-trx-commit=2
+      - --sync-binlog=0
+      - --skip-log-bin
     ports:
       - "3009:3306"
     networks:
